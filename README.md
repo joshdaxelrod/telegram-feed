@@ -275,15 +275,19 @@ channels post in a different language, that list will need editing too,
 or the Trending page will surface a lot of meaningless function words
 instead of real topics.
 
+If you're monitoring channels in a language you don't read yourself, you
+don't need to translate anything by hand: Chrome's built-in translate
+feature (right-click anywhere on the page → Translate to English) works
+on these feed pages the same as it does on any other website.
+
 ## A note on scraping etiquette
 
-"Scraping" just means the script visits each channel's page the same way
-your own browser would — it just does it automatically, and for many
-channels at once (10 at a time, by default). Doing this in moderation is
-completely normal; doing it too aggressively (an enormous channel list,
-or running it constantly) can start to look like the kind of automated
-traffic a website tries to block, and Telegram could begin refusing your
-requests if it decides you're hitting it too hard.
+The scraper visits many channels' pages at once (10 at a time, by
+default), automatically. Doing that in moderation is completely normal;
+doing it too aggressively (an enormous channel list, or running it
+constantly) can start to look like the kind of automated traffic a
+website tries to block, and Telegram could begin refusing your requests
+if it decides you're hitting it too hard.
 
 In practice: keep your channel list to what you actually need rather than
 adding channels "just in case," and don't run the scraper more often than
@@ -304,20 +308,12 @@ Being upfront about what this can't do:
 - **View counts aren't a verified fact.** They're the only reach signal
   public scraping can get, and they can be inflated. Treat "Popular" as a
   starting point for your own judgment, not a finding in itself.
-- **No translation built in.** If you're monitoring channels in a
-  language you don't read, your browser's own translate feature (e.g.
-  right-click → Translate in Chrome) works on these pages like any other
-  webpage.
 - **The Trending page needs tuning to your channel list size.** It only
   counts a term as trending if it shows up on several *different*
   channels, not just several posts — otherwise one copy-pasted post reads
   as a fake spike. What counts as "several" depends on how many channels
   you're watching; if Trending comes back empty, try
   `python trends.py --min-channels 2` and raise it from there.
-- **It depends on Telegram's page staying the same.** The scraper reads a
-  specific page layout. If Telegram changes it, scraping will start
-  failing until `scraper.py` is updated to match — not complicated, just
-  inherently fragile.
 
 ## Tests
 
