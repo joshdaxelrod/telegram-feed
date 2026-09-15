@@ -263,20 +263,37 @@ repository — it's your scraped data, not part of the tool itself.
 
 ## Customizing for your channels
 
-`filters.py` holds a short list of patterns used to drop ads and
-"subscribe to our backup channel" spam from the feeds. They're written
-for a German-language Telegram scene, since that's what I monitor — open
-the file and edit `AD_PATTERNS` / `PROMO_PATTERNS` if you're watching
-channels in another language.
+Two files ship with generic English examples that you'll likely want to
+adjust once you know what your own channels actually look like.
 
-`trends.py` also has its own `STOPWORDS` list (common filler words like
-"the," "and," "also") tuned for German, for the same reason. If your
-channels post in a different language, that list will need editing too,
-or the Trending page will surface a lot of meaningless function words
-instead of real topics. You don't have to build one by hand — searching
-"[your language] stopwords list" turns up plenty of free, ready-made ones
-(NLTK's stopwords corpus, for example, covers dozens of languages) that
-you can drop in as a replacement.
+**`filters.py`** drops ads and "subscribe to our backup channel" spam
+from the feeds. Open the file and you'll see `AD_PATTERNS` and
+`PROMO_PATTERNS` — lists of phrases like `"subscribe now"` or `"buy
+now"`. If your channels use different spam phrases, copy an existing
+line, swap the phrase inside the quotes for one you actually see, and
+leave the rest of the line as-is.
+
+**`trends.py`** has its own `STOPWORDS` list — common filler words
+("the," "and," "also") that get ignored so the Trending page surfaces
+real topics instead of grammar. If your channels post in a language
+other than English, this list won't catch that language's filler words,
+and Trending will fill up with meaningless function words instead of
+real topics. To fix it:
+
+1. Open `trends.py` and find the line that starts `STOPWORDS = {` near
+   the top of the file.
+2. Replace the words between the curly braces `{ }` with your own
+   language's common filler words — each one in quotes, separated by
+   commas, same shape as what's already there.
+3. The fastest way to get that list: ask an AI assistant like Claude or
+   ChatGPT something like *"give me the 100 most common French filler
+   words as a Python list of lowercase, quoted strings"* and paste the
+   answer straight in. Searching "[your language] stopwords list" also
+   turns up ready-made ones, though you may need to reformat them into
+   that quotes-and-commas style yourself.
+4. Save the file and run `python trends.py` again. If it's still mostly
+   grammar instead of real topics, you're missing some common words —
+   add them the same way.
 
 If you're monitoring channels in a language you don't read yourself, you
 don't need to translate anything by hand: Chrome's built-in translate

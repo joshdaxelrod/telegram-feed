@@ -3,12 +3,9 @@ Trending terms: words/phrases spreading across many channels right now,
 relative to how often they normally come up — for spotting a narrative
 taking off before it shows up as an obviously "popular" post.
 
-STOPWORDS below is a STARTING EXAMPLE tuned for German — edit it for your
-own language and channel set, same as filters.py. You don't have to write
-one by hand: searching "<your language> stopwords list" turns up plenty
-of free, ready-made ones (NLTK's stopwords corpus, for example, covers
-dozens of languages) that you can paste in here in place of the German
-list.
+STOPWORDS below is a STARTING EXAMPLE in English — edit it for your own
+language and channel set, same as filters.py. See the README's
+"Customizing for your channels" section for exactly how.
 
 Tune --min-channels to your channel list size: a term only counts as
 trending if it appears on at least that many DISTINCT channels in the
@@ -33,24 +30,23 @@ from db import get_conn
 from filters import is_junk
 
 STOPWORDS = {
-    "der", "die", "das", "und", "ist", "im", "in", "den", "von", "mit", "für",
-    "auf", "zu", "dem", "des", "ein", "eine", "einer", "eines", "einem",
-    "einen", "als", "auch", "aber", "doch", "noch", "nur", "schon", "wenn",
-    "wie", "was", "wer", "wo", "wann", "warum", "dass", "sich", "sie", "er",
-    "es", "wir", "ihr", "du", "ich", "man", "hat", "haben", "wird", "werden",
-    "wurde", "wurden", "sind", "war", "waren", "sein", "seine", "seiner",
-    "seinem", "seinen", "ihre", "ihrer", "ihrem", "ihren", "nicht", "kein",
-    "keine", "keiner", "keinem", "keinen", "um", "aus", "bei", "nach", "vor",
-    "über", "unter", "durch", "gegen", "ohne", "bis", "seit", "während",
-    "wegen", "also", "dann", "denn", "hier", "da", "dort", "jetzt", "heute",
-    "gestern", "morgen", "mehr", "sehr", "alle", "alles", "jede", "jeder",
-    "jedes", "viele", "viel", "kann", "können", "muss", "müssen", "soll",
-    "sollen", "darf", "dürfen", "will", "wollen", "https", "http", "com",
-    "www", "immer", "wieder", "diese", "dieser", "dieses", "dabei", "gibt",
-    "oder", "zum", "zur", "kanal", "telegram", "folgt", "teilen", "uns",
-    "nichts", "deutschland", "zeit", "woche", "wochen", "tag", "tage",
-    "jahr", "jahre", "monat", "monate", "stunde", "stunden", "minute",
-    "minuten", "oft", "mal", "neue", "neuer", "neues", "erste", "ersten",
+    "the", "a", "an", "this", "that", "these", "those", "it", "its", "he",
+    "she", "they", "them", "his", "her", "their", "we", "us", "our", "you",
+    "your", "and", "or", "but", "so", "because", "although", "however",
+    "also", "then", "than", "in", "on", "at", "to", "of", "for", "with",
+    "from", "by", "about", "into", "over", "under", "through", "against",
+    "without", "until", "since", "during", "up", "out", "off", "what",
+    "who", "where", "when", "why", "how", "which", "whom", "is", "are",
+    "was", "were", "be", "been", "being", "have", "has", "had", "do",
+    "does", "did", "can", "could", "will", "would", "shall", "should",
+    "may", "might", "must", "not", "no", "nor", "https", "http", "com",
+    "www", "always", "again", "there", "here",
+    "channel", "telegram", "follow", "share", "click", "subscribe",
+    "nothing", "today", "yesterday", "tomorrow", "now", "often",
+    "sometimes", "never", "time", "week", "weeks", "day", "days", "year",
+    "years", "month", "months", "hour", "hours", "minute", "minutes",
+    "more", "very", "all", "some", "many", "much", "new", "first", "last",
+    "other", "another", "just", "only", "even",
 }
 
 _TOKEN_RE = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ]{3,}")
