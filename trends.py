@@ -60,11 +60,10 @@ STOPWORDS = {
 def _load_stopwords() -> set[str]:
     words = set(STOPWORDS)
     if LOCAL_STOPWORDS_PATH.exists():
-        words |= {
-            line.strip().lower()
-            for line in LOCAL_STOPWORDS_PATH.read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        }
+        for line in LOCAL_STOPWORDS_PATH.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                words.add(line.lower())
     return words
 
 

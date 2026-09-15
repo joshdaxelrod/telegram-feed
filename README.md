@@ -285,9 +285,18 @@ adjust once you know what your own channels actually look like.
 **`filters.py`** drops ads and "subscribe to our backup channel" spam
 from the feeds. Open the file and you'll see `AD_PATTERNS` and
 `PROMO_PATTERNS` — lists of phrases like `"subscribe now"` or `"buy
-now"`. If your channels use different spam phrases, copy an existing
-line, swap the phrase inside the quotes for one you actually see, and
-leave the rest of the line as-is.
+now"`. If your channels use different spam phrases (in English or any
+other language), you have the same two options as `trends.py` below:
+
+- **Recommended — a personal, private addition.** Create a file called
+  `filters.local.txt`, one spam phrase per line (lines starting with `#`
+  are ignored, for your own notes). Any post containing one of those
+  phrases gets filtered, on top of the shipped `AD_PATTERNS` /
+  `PROMO_PATTERNS` — no code editing required, and like
+  `stopwords.local.txt` below, it's git-ignored so it stays private.
+- **Alternative — edit the shipped lists directly.** Copy an existing
+  line in `AD_PATTERNS` / `PROMO_PATTERNS`, swap the phrase inside the
+  quotes for one you actually see, and leave the rest of the line as-is.
 
 **`trends.py`** has its own `STOPWORDS` list — common filler words
 ("the," "and," "also") that get ignored so the Trending page surfaces
