@@ -13,6 +13,24 @@ def _setup_db(tmp_path):
     return db_path
 
 
+def _setup_db_without_channel_status(tmp_path):
+    """Simulates a real database created before channel_status existed —
+    the exact scenario that broke audit() in production."""
+    db_path = tmp_path / "test.db"
+    import sqlite3
+    conn = sqlite3.connect(db_path)
+    conn.executescript("""
+        CREATE TABLE messages (
+            id INTEGER PRIMARY KEY, channel TEXT NOT NULL, message_id INTEGER NOT NULL,
+            date TEXT NOT NULL, text TEXT, views INTEGER DEFAULT 0,
+            is_forward INTEGER DEFAULT 0, media_type TEXT, scraped_at TEXT NOT NULL,
+            UNIQUE(channel, message_id)
+        );
+    """)
+    conn.close()
+    return db_path
+
+
 def _insert_message(conn, channel, message_id, days_ago=1):
     date = (datetime.now(timezone.utc) - timedelta(days=days_ago)).isoformat()
     conn.execute(
@@ -98,6 +116,22 @@ def test_channel_below_min_msgs_is_low_even_if_recent(tmp_path):
     assert [h for h, _ in result["low"]] == ["sparse_channel"]
     assert result["active"] == []
     assert result["unreachable"] == []
+
+
+def test_audit_works_against_database_missing_channel_status(tmp_path):
+    """Regression test: a real database created before channel_status
+    existed made audit() crash with "no such table: channel_status".
+    audit() must create any missing schema itself rather than assuming
+    scraper.py already ran since the schema last changed."""
+    db_path = _setup_db_without_channel_status(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "some_channel", 1, days_ago=1)
+
+    with patch.object(db, "DB_PATH", db_path), patch.object(audit_channels, "get_all_monitored", return_value=["some_channel"]):
+        result = audit_channels.audit()  # must not raise
+
+    assert [h for h, _ in result["active"]] == ["some_channel"]
 
 
 def test_prune_removes_given_handles_only(tmp_path):

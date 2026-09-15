@@ -11,10 +11,15 @@ import argparse
 import csv
 
 from channels import get_all_monitored, load_channels, REGISTRY_PATH
-from db import get_conn
+from db import get_conn, init_db
 
 
 def audit(min_msgs: int = 1) -> dict:
+    # channel_status only exists once init_db() has run at least once since
+    # it was added. scraper.py always calls it first, but this script can
+    # run against a database that's never seen a scrape since then.
+    init_db()
+
     monitored = get_all_monitored()
 
     with get_conn() as conn:
