@@ -6,19 +6,30 @@ once.
 
 ## Why this exists
 
-A lot of my reporting on extremism and disinformation involves keeping an
-eye on Telegram channels. But Telegram's own app doesn't give you any way
-to see what's viral across a whole set of channels at once, what's
-trending across a scene, or search everything you've seen over the last
-week. So I built this: point it at a list of public channel handles, and
-it scrapes what they've posted into a database, then generates a set of
-readable web pages — like a private, editorial version of a social feed,
-built from exactly the channels you care about.
+As a disinformation reporter, I'm constantly scanning social media for
+viral claims. And yet, time and again, I default to X. I mean yes,
+there's lots of disinformation on X. But that's not why. It's because X
+presents a clean, readable, scrollable feed of posts. For Telegram, on
+the other hand, if I want to read even 100 posts across 10 channels, that
+involves opening each channel's feed, scrolling, entering a new channel's
+name, scrolling, etc. It's not a useful way to monitor.
 
-No Telegram account, API key, or developer credentials of any kind are
-required. It works by visiting each channel's public preview page (the
-same page you'd see if you pasted a `t.me/s/channelname` link into a
-browser without being logged in) and reading what's posted there.
+Instead, I wanted to be able to scroll a searchable, X-like feed of
+Telegram posts and quickly see which posts are most popular and which
+topics are trending.
+
+This tool is especially nice because you don't even need a Telegram
+account, let alone API access or developer credentials. If you give it
+the channel names, the tool will scrape directly from that channel's
+public webpage (`t.me/s/channelname`) and read what's posted there.
+Everything is saved locally to your machine, which makes archival easier
+and keeps your data secure.
+
+But, crucially: this tool is only as effective as the channels you give
+it to look at. So spend some time developing a good list of channels
+you'd like to monitor — more tips on how to do that below.
+
+Happy monitoring!
 
 ## Screenshots
 
@@ -152,27 +163,29 @@ A channel's **handle** is the part of its Telegram link after `t.me/` —
 if a channel's link is `t.me/somechannel`, its handle is `somechannel`.
 
 `channels.csv` is left out of this repository on purpose (see
-`.gitignore`) — it's your own research list, and deciding what to
-monitor is an editorial call, not something this tool should assume or
-publish for you.
+`.gitignore`) — it's your own research list.
 
 ## Finding channels to monitor
 
 This tool is only as good as the list you give it — it doesn't discover
 anything on its own, it just watches the channels you already know about.
-A few ways I actually build that list:
+For this tool to be helpful, you'll need to spend a couple hours
+developing a good dataset. A few ways I actually build that list:
 
 - **Follow the forwards.** Once you've found one relevant channel, check
   what it reposts from and who reposts it. Telegram shows the original
   source on any forwarded message, which is usually the fastest way to
   map out a whole network starting from a single channel.
 - **Search Telegram itself.** Telegram's in-app search can surface
-  channels by keyword or topic.
+  channels by keyword or topic. Personally, I dislike Telegram search and
+  find it hard to find channel names this way.
 - **Look for existing research.** Depending on your beat, researchers,
   NGOs, or academic projects sometimes maintain curated, categorized
   channel lists (for extremism, disinformation, election monitoring, and
   so on, in a given country or language). Search for one relevant to your
-  beat before building a list from scratch.
+  beat before building a list from scratch. You can also reach out to
+  researchers and ask if they'd consider sharing a dataset! Researchers
+  are nice, especially if you're on a similar beat.
 - **Watch who officials and outlets link to.** Politicians, movement
   figures, and partisan outlets often plug their own or allied channels
   in posts, bios, or on other platforms.

@@ -46,7 +46,8 @@ STOPWORDS = {
     "sometimes", "never", "time", "week", "weeks", "day", "days", "year",
     "years", "month", "months", "hour", "hours", "minute", "minutes",
     "more", "very", "all", "some", "many", "much", "new", "first", "last",
-    "other", "another", "just", "only", "even",
+    "other", "another", "just", "only", "even", "says", "said", "say",
+    "according", "national",
 }
 
 _TOKEN_RE = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ]{3,}")
