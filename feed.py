@@ -15,7 +15,7 @@ needed). For searching further back than what's rendered on a given page,
 use trace.py against the full database instead.
 
 Usage:
-    python feed.py                       # last 24h, all four feeds, opens popular.html
+    python feed.py                       # last 24h, all four feeds, opens trending.html
     python feed.py --mode random --hours 48
     python feed.py --mode trending --min-channels 3
     python feed.py --keywords impfung corona --exclude satire
