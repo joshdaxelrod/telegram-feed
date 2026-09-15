@@ -8,11 +8,14 @@ once.
 
 As a disinformation reporter, I'm constantly scanning social media for
 viral claims. And yet, time and again, I default to X. I mean yes,
-there's lots of disinformation on X. But that's not why. It's because X
-presents a clean, readable, scrollable feed of posts. For Telegram, on
-the other hand, if I want to read even 100 posts across 10 channels, that
-involves opening each channel's feed, scrolling, entering a new channel's
-name, scrolling, etc. It's not a useful way to monitor.
+there's a lot of disinformation on X, but that's not why. It's because
+(for all its faults) X presents a clean, readable, scrollable feed of
+posts. For me, that makes it incredibly easy to monitor.
+
+Enter Telegram. No main feed, just channels. To monitor, you have to know
+what channels you're looking at, go into each one individually, read
+that channel's feed, exit, and repeat. It's maddening and not a useful
+way to monitor.
 
 Instead, I wanted to be able to scroll a searchable, X-like feed of
 Telegram posts and quickly see which posts are most popular and which
