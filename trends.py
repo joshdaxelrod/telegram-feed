@@ -105,6 +105,49 @@ def _count_terms(messages: list[dict]) -> Counter:
     return counter
 
 
+def diagnose_baseline(
+    recent_hours: int = 24,
+    baseline_hours: int = 168,
+    as_of: datetime | None = None,
+    min_ratio: float = 0.1,
+) -> str | None:
+    """Returns a warning if the baseline window doesn't have enough scraped
+    history to make a spike ratio meaningful, else None.
+
+    The whole scoring approach is recent rate vs. baseline rate — if the
+    baseline window is nearly empty (a scraping gap, not a real quiet
+    period), almost every term looks like an "infinite spike," ordinary
+    grammar included, and the scores stop meaning anything."""
+    now = as_of or datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    recent_since = (now - timedelta(hours=recent_hours)).isoformat()
+    baseline_since = (now - timedelta(hours=baseline_hours)).isoformat()
+    baseline_span_hours = max(baseline_hours - recent_hours, 1)
+
+    with get_conn() as conn:
+        recent_n = len(_fetch_range(conn, recent_since, now_iso))
+        baseline_n = len(_fetch_range(conn, baseline_since, recent_since))
+
+    recent_rate = recent_n / recent_hours if recent_hours else 0
+    baseline_rate = baseline_n / baseline_span_hours
+
+    if recent_rate > 0 and baseline_rate < recent_rate * min_ratio:
+        return (
+            f"Only {baseline_n} messages were scraped in the "
+            f"{baseline_span_hours:.0f}h before your recent window, versus "
+            f"{recent_n} in the recent window itself. Trending compares "
+            f"against that earlier period, so with this little history "
+            f"behind it, almost anything can look like a fake \"infinite\" "
+            f"spike — ordinary grammar included. This usually means there's "
+            f"a gap in your scraping history (e.g. this is a new setup, or "
+            f"scraping had lapsed before this run). Fix: run "
+            f"`python scraper.py --hours {baseline_hours}` once to backfill "
+            f"a full baseline period, then go back to your normal, smaller "
+            f"scrapes — daily is enough for most channel lists."
+        )
+    return None
+
+
 def get_trending_terms(
     recent_hours: int = 24,
     baseline_hours: int = 168,
@@ -181,6 +224,10 @@ def print_trending(
     )
 
     print(f"\n=== Trending terms — last {recent_hours}h vs {baseline_hours}h baseline ===\n")
+
+    warning = diagnose_baseline(recent_hours, baseline_hours, as_of=as_of)
+    if warning:
+        print(f"⚠️  {warning}\n")
 
     if not results:
         print(f"Nothing met the threshold (min {min_recent_count} mentions on {min_channels}+ channels).")

@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from score import get_top_messages, get_random_messages, get_spotlight_messages, get_keyword_messages
-from trends import get_trending_terms
+from trends import get_trending_terms, diagnose_baseline
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -240,6 +240,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     margin: 0 auto 12px;
   }}
   .back-link a {{ font-size: 13px; color: #1877f2; text-decoration: none; }}
+  .notice {{
+    max-width: 720px;
+    margin: 0 auto 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: #fff8e1;
+    border: 1px solid #f0d896;
+    color: #6b5900;
+    font-size: 13px;
+    line-height: 1.5;
+  }}
   .empty {{
     max-width: 720px;
     margin: 40px auto;
@@ -256,6 +267,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </header>
 <nav>{nav}</nav>
 {back_link}
+{notice}
 <div class="search-bar">
   <input type="text" id="search" placeholder="Filter...">
   <div class="search-count" id="search-count"></div>
@@ -405,6 +417,7 @@ def _render_cards(
         subtitle=subtitle,
         nav=_build_nav(nav_active),
         back_link=back_link,
+        notice="",
         cards=body,
         help=_help_html(nav_active, baseline_hours=baseline_hours),
     )
@@ -416,7 +429,7 @@ def _render_cards(
     return html
 
 
-def _render_terms(terms: list[dict], subtitle: str, baseline_hours: int | None = None) -> str:
+def _render_terms(terms: list[dict], subtitle: str, baseline_hours: int | None = None, warning: str | None = None) -> str:
     baseline_label = _format_period(baseline_hours or 168)
     rows = []
     for i, t in enumerate(terms, 1):
@@ -440,12 +453,15 @@ def _render_terms(terms: list[dict], subtitle: str, baseline_hours: int | None =
             search_key=search_key,
         ))
 
+    notice_html = f'<div class="notice">⚠️ {_escape(warning)}</div>' if warning else ""
+
     body = "\n".join(rows) if rows else ""
     html = HTML_TEMPLATE.format(
         title="Trending",
         subtitle=subtitle,
         nav=_build_nav("trending"),
         back_link="",
+        notice=notice_html,
         cards=body,
         help=_help_html("trending", baseline_hours=baseline_hours),
     )
@@ -526,6 +542,7 @@ def build_trending_feed(
         recent_hours=hours, baseline_hours=baseline_hours,
         top_n=top_n, min_recent_count=min_recent_count, min_channels=min_channels,
     )
+    baseline_warning = diagnose_baseline(hours, baseline_hours)
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -556,7 +573,10 @@ def build_trending_feed(
 
     subtitle = f"{len(terms)} trending terms &middot; last {hours}h vs {baseline_hours}h baseline &middot; generated {generated}"
     index_path = DATA_DIR / "trending.html"
-    index_path.write_text(_render_terms(terms, subtitle=subtitle, baseline_hours=baseline_hours), encoding="utf-8")
+    index_path.write_text(
+        _render_terms(terms, subtitle=subtitle, baseline_hours=baseline_hours, warning=baseline_warning),
+        encoding="utf-8",
+    )
 
     with (DATA_DIR / "trending.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["rank", "term", "score", "recent_count", "channel_count", "baseline_count"])

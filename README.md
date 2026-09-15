@@ -219,6 +219,23 @@ To look further back:
 python scraper.py --hours 72     # last 3 days instead of 24 hours
 ```
 
+**The first time you set this up, scrape a full week instead of a day:**
+
+```bash
+python scraper.py --hours 168    # once, when you're starting out
+```
+
+Here's why: the Trending page (below) works by comparing how often a term
+comes up *right now* against how often it normally comes up over the
+past 7 days. If your database only has a day of history in it, there's
+no real "normal" to compare against, and Trending will show nonsense —
+everything looks like an "infinite spike," including plain grammar,
+because there's nothing behind it. One bigger scrape up front fixes
+this for good. After that, your regular daily (or however often you
+like) scrapes keep that history continuously topped up, and you don't
+need to repeat the big one — just don't let more than a few days pass
+without scraping at all, or you'll recreate the same gap.
+
 ### 2. Generate the feed
 
 ```bash
@@ -324,25 +341,24 @@ If that file exists, its words are automatically added on top of the
 shipped English list every time you run `trends.py` or `feed.py` — no
 code editing required. Lines starting with `#` are ignored, so you can
 organize it into categories (pronouns, verb forms, contractions, and so
-on) for your own reference. It's listed in `.gitignore`, so it stays on
-your computer and never gets committed if you're using git; it's exactly
-the same idea as `channels.csv` being your own private file. The fastest
-way to fill it in: ask an AI assistant like Claude or ChatGPT something
-like *"give me the 300 most common French filler words — articles,
-pronouns, conjunctions, prepositions, and every common form of 'to be'
-and 'to have' — one per line, all lowercase"* and paste the answer
-straight into the file. Aim high rather than low: a real stopword list
-needs a few hundred words to actually work (off-the-shelf English/German
-lists from libraries like NLTK run 200–600+ words), and it's much faster
-to trim a list that's too aggressive than to keep finding one leaked
-word at a time.
+on) for your own reference. This keeps your personal list separate from
+the shared code, the same way `channels.csv` keeps your channel list
+separate — it's never uploaded anywhere, including to GitHub, even if
+you update the tool later. The fastest way to fill it in: ask an AI
+assistant like Claude or ChatGPT something like *"give me the 300 most
+common French filler words — articles, pronouns, conjunctions,
+prepositions, and every common form of 'to be' and 'to have' — one per
+line, all lowercase"* and paste the answer straight into the file. Aim
+high rather than low: a real stopword list needs a few hundred words to
+actually work (off-the-shelf English/German lists from libraries like
+NLTK run 200–600+ words), and it's much faster to trim a list that's too
+aggressive than to keep finding one leaked word at a time.
 
-**Alternative — edit the shipped list directly.** If you'd rather just
-replace the English words outright (or you're not using git and don't
-need to keep an edit separate), open `trends.py`, find the line that
-starts `STOPWORDS = {`, and replace the words between the curly braces
-`{ }` with your own — each one in quotes, separated by commas, same
-shape as what's already there.
+**Alternative — edit the shipped list directly.** If you'd simply rather
+replace the English words outright than keep a separate file, open
+`trends.py`, find the line that starts `STOPWORDS = {`, and replace the
+words between the curly braces `{ }` with your own — each one in quotes,
+separated by commas, same shape as what's already there.
 
 Either way: save, then run `python trends.py` again. If it's still
 mostly grammar instead of real topics, you're missing some common

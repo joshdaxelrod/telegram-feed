@@ -97,3 +97,35 @@ def test_term_with_high_baseline_is_not_treated_as_new_spike(tmp_path):
     ongoing = next(r for r in results if r["term"] == "ongoingsaga")
     # a term mentioned at roughly its normal rate should score near 1x, not read as a spike
     assert ongoing["score"] < 1.5
+
+
+def test_diagnose_baseline_warns_when_history_is_too_thin(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        # a burst of fresh scraping, but almost nothing in the week before it
+        for i in range(50):
+            _insert_message(conn, f"chan_{i % 10}", i, "Some fresh report today", hours_ago=1)
+        _insert_message(conn, "chan_0", 9999, "One old message", hours_ago=100)
+
+        warning = trends.diagnose_baseline(recent_hours=24, baseline_hours=168, as_of=as_of)
+
+    assert warning is not None
+    assert "scraper.py --hours 168" in warning
+
+
+def test_diagnose_baseline_silent_with_healthy_history(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        # comparable volume in both the recent window and the baseline before it
+        for i in range(20):
+            _insert_message(conn, f"chan_{i % 5}", i, "Some fresh report today", hours_ago=1)
+        for i in range(120):
+            _insert_message(conn, f"chan_{i % 5}", 1000 + i, "Some older report", hours_ago=30 + i)
+
+        warning = trends.diagnose_baseline(recent_hours=24, baseline_hours=168, as_of=as_of)
+
+    assert warning is None
