@@ -232,9 +232,9 @@ no real "normal" to compare against, and Trending will show nonsense —
 everything looks like an "infinite spike," including plain grammar,
 because there's nothing behind it. One bigger scrape up front fixes
 this for good. After that, your regular daily (or however often you
-like) scrapes keep that history continuously topped up, and you don't
-need to repeat the big one — just don't let more than a few days pass
-without scraping at all, or you'll recreate the same gap.
+like) scrapes keep that history continuously topped up. If a real gap
+ever does open up (you stop scraping for a while, then pick it back up),
+just run the `--hours 168` backfill again.
 
 ### 2. Generate the feed
 

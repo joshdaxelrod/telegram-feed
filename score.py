@@ -139,9 +139,18 @@ def get_keyword_messages(
     exclude: list[str] | None = None,
     hours: int = 168,
     limit: int = 100,
+    match_all: bool = False,
 ) -> list[dict]:
+    """match_all=False (default): any keyword matches (for --keywords on the
+    CLI, where each item is an independent term). match_all=True: every
+    keyword must be present somewhere in the text, not necessarily
+    adjacent — use this for a trending bigram like "chrupalla souveränes",
+    since the two words were adjacent in the *filtered* token stream that
+    built the term, not necessarily in the original text (a stopword
+    could well have sat between them)."""
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
-    kw_clause = " OR ".join(f"LOWER(text) LIKE :kw{i}" for i in range(len(keywords)))
+    joiner = " AND " if match_all else " OR "
+    kw_clause = joiner.join(f"LOWER(text) LIKE :kw{i}" for i in range(len(keywords)))
     exc_clause = " AND ".join(f"LOWER(text) NOT LIKE :ex{i}" for i in range(len(exclude or [])))
     exc_clause = f"AND ({exc_clause})" if exc_clause else ""
     params = {"since": since}

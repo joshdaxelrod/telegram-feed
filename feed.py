@@ -558,7 +558,9 @@ def build_trending_feed(
     for t in terms:
         slug = _slugify(t["term"])
         detail_path = DATA_DIR / f"trending_{slug}.html"
-        detail_messages = get_keyword_messages(keywords=[t["term"]], hours=hours, limit=detail_limit)
+        detail_messages = get_keyword_messages(
+            keywords=t["term"].split(), hours=hours, limit=detail_limit, match_all=True,
+        )
         detail_subtitle = (
             f"{len(detail_messages)} posts matching &#8220;{_escape(t['term'])}&#8221; "
             f"&middot; last {hours}h &middot; generated {generated}"

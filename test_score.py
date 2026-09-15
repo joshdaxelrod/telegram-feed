@@ -180,3 +180,34 @@ def test_get_spotlight_messages_per_channel_limit(tmp_path):
 
     assert len(results) == 2
     assert sorted(r["views"] for r in results) == [300, 400]
+
+
+def test_get_keyword_messages_match_all_finds_non_adjacent_words(tmp_path):
+    """A trending bigram's two words come from a stopword-filtered token
+    stream, so they're often not literally adjacent in the source text
+    (e.g. "chrupalla souveränes" from "Chrupalla für ein souveränes...").
+    match_all=True must still find the post by requiring both words
+    present anywhere, not as one literal phrase."""
+    db_path = _setup_db(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "chan_a", 1, views=100, text="Chrupalla für ein souveränes Deutschland")
+
+        literal_phrase = score.get_keyword_messages(keywords=["chrupalla souveränes"], hours=24)
+        match_all = score.get_keyword_messages(keywords=["chrupalla", "souveränes"], hours=24, match_all=True)
+
+    assert literal_phrase == []
+    assert len(match_all) == 1
+
+
+def test_get_keyword_messages_default_is_or_not_and(tmp_path):
+    db_path = _setup_db(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "chan_a", 1, views=100, text="Mentions only vaccines here")
+
+        or_default = score.get_keyword_messages(keywords=["vaccines", "election"], hours=24)
+        and_mode = score.get_keyword_messages(keywords=["vaccines", "election"], hours=24, match_all=True)
+
+    assert len(or_default) == 1
+    assert and_mode == []

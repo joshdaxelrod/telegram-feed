@@ -161,7 +161,12 @@ def get_trending_terms(
     min_channels requires a term to appear on at least that many distinct
     channels in the recent window — without this, a single post
     copy-pasted a few times reads as an "infinite spike" against a zero
-    baseline, when it's really just one source, not an organic trend."""
+    baseline, when it's really just one source, not an organic trend.
+
+    A separate diversity pass then drops terms that are really just word
+    fragments of an already-selected term's same underlying post(s) —
+    otherwise one viral, wordy post gets sliced into a dozen overlapping
+    bigrams that all "trend" together and crowd out everything else."""
     now = as_of or datetime.now(timezone.utc)
     now_iso = now.isoformat()
     recent_since = (now - timedelta(hours=recent_hours)).isoformat()
@@ -176,10 +181,13 @@ def get_trending_terms(
     baseline_counts = _count_terms(baseline_msgs)
 
     channels_per_term: dict[str, set] = {}
+    messages_per_term: dict[str, set] = {}
     examples: dict[str, list[dict]] = {}
     for m in recent_msgs:
+        msg_key = (m["channel"], m["message_id"])
         for term in _terms(m["text"] or ""):
             channels_per_term.setdefault(term, set()).add(m["channel"])
+            messages_per_term.setdefault(term, set()).add(msg_key)
             bucket = examples.setdefault(term, [])
             if len(bucket) < 2:
                 bucket.append(m)
@@ -203,10 +211,25 @@ def get_trending_terms(
             "baseline_count": baseline_count,
             "score": score,
             "examples": examples.get(term, []),
+            "_messages": messages_per_term[term],
         })
 
     results.sort(key=lambda r: r["score"], reverse=True)
-    return results[:top_n]
+
+    selected = []
+    for r in results:
+        overlaps_existing = any(
+            len(r["_messages"] & kept["_messages"]) / min(len(r["_messages"]), len(kept["_messages"])) > 0.6
+            for kept in selected
+        )
+        if not overlaps_existing:
+            selected.append(r)
+        if len(selected) >= top_n:
+            break
+
+    for r in selected:
+        del r["_messages"]
+    return selected
 
 
 def print_trending(

@@ -72,10 +72,11 @@ def test_term_trending_across_enough_channels_is_found(tmp_path):
             recent_hours=24, baseline_hours=168, min_recent_count=3, min_channels=3, as_of=as_of,
         )
 
-    terms = {r["term"] for r in results}
-    assert "special" in terms
-    top = next(r for r in results if r["term"] == "special")
-    assert top["channel_count"] == 4
+    # Every word/bigram here comes from the exact same post on the same 4
+    # channels, so the diversity filter should collapse them to a single
+    # representative instead of listing every fragment separately.
+    assert len(results) == 1
+    assert results[0]["channel_count"] == 4
 
 
 def test_term_with_high_baseline_is_not_treated_as_new_spike(tmp_path):
@@ -94,9 +95,31 @@ def test_term_with_high_baseline_is_not_treated_as_new_spike(tmp_path):
             recent_hours=24, baseline_hours=168, min_recent_count=1, min_channels=3, as_of=as_of,
         )
 
-    ongoing = next(r for r in results if r["term"] == "ongoingsaga")
     # a term mentioned at roughly its normal rate should score near 1x, not read as a spike
-    assert ongoing["score"] < 1.5
+    # (all fragments of this post collapse to one representative — check whichever survives)
+    assert results
+    assert all(r["score"] < 1.5 for r in results)
+
+
+def test_diverse_stories_are_not_collapsed_together(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        # one viral, wordy post on 4 channels
+        for i, chan in enumerate(["chan_a", "chan_b", "chan_c", "chan_d"]):
+            _insert_message(conn, chan, i, "Politician announces surprising resignation amid scandal today", hours_ago=1)
+        # a second, unrelated story on a different set of 4 channels
+        for i, chan in enumerate(["chan_e", "chan_f", "chan_g", "chan_h"]):
+            _insert_message(conn, chan, 100 + i, "Central bank raises interest rates sharply again", hours_ago=1)
+
+        results = trends.get_trending_terms(
+            recent_hours=24, baseline_hours=168, min_recent_count=3, min_channels=3, as_of=as_of, top_n=20,
+        )
+
+    # two unrelated stories should produce (at least) two distinct survivors,
+    # not have the second story's terms crowded out by the first's fragments
+    assert len(results) >= 2
 
 
 def test_diagnose_baseline_warns_when_history_is_too_thin(tmp_path):
