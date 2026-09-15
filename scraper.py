@@ -65,12 +65,27 @@ def _media_type(msg) -> Optional[str]:
     return None
 
 
+def _set_channel_found(conn: sqlite3.Connection, handle: str, found: bool):
+    """Records whether a channel's page was reachable and non-empty on its
+    most recent scrape — used by audit_channels.py to flag channels that
+    have gone private/deleted, as distinct from ones that simply haven't
+    posted in a while (which is not itself a problem)."""
+    conn.execute(
+        """
+        INSERT INTO channel_status (channel, found, checked_at) VALUES (?, ?, ?)
+        ON CONFLICT(channel) DO UPDATE SET found = excluded.found, checked_at = excluded.checked_at
+        """,
+        (handle, 1 if found else 0, datetime.now(timezone.utc).isoformat()),
+    )
+    conn.commit()
+
+
 def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
     scraped_at = datetime.now(timezone.utc).isoformat()
     count = 0
     url = f"https://t.me/s/{handle}"
 
-    for _ in range(MAX_PAGES_PER_CHANNEL):
+    for page_num in range(MAX_PAGES_PER_CHANNEL):
         try:
             resp = requests.get(url, headers=HEADERS, timeout=15)
         except requests.RequestException as e:
@@ -79,6 +94,8 @@ def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
 
         if resp.status_code != 200:
             log.warning(f"  {handle}: HTTP {resp.status_code} — skipping")
+            if page_num == 0:
+                _set_channel_found(conn, handle, found=False)
             break
 
         soup = BeautifulSoup(resp.text, "html.parser")
@@ -86,7 +103,12 @@ def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
 
         if not messages:
             log.warning(f"  {handle}: no messages (private or empty)")
+            if page_num == 0:
+                _set_channel_found(conn, handle, found=False)
             break
+
+        if page_num == 0:
+            _set_channel_found(conn, handle, found=True)
 
         oldest_id = None
         all_old = True

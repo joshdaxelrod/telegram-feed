@@ -33,6 +33,12 @@ def init_db():
 
             CREATE INDEX IF NOT EXISTS idx_messages_date ON messages(date);
             CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages(channel);
+
+            CREATE TABLE IF NOT EXISTS channel_status (
+                channel     TEXT PRIMARY KEY,
+                found       INTEGER NOT NULL,
+                checked_at  TEXT NOT NULL
+            );
         """)
 
 
