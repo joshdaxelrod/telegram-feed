@@ -399,18 +399,6 @@ Being upfront about what this can't do:
   Spotlight are unaffected, since they don't need to split text into
   words at all.
 
-## Tests
-
-This isn't part of the everyday workflow — you don't need it to scrape,
-generate feeds, or search. It's an automated check that the code's
-internal logic (scoring, deduplication, trending detection, and so on)
-still works correctly, useful mainly if you edit `filters.py` or
-`trends.py` and want to confirm you haven't broken anything:
-
-```bash
-python -m pytest
-```
-
 ## License
 
 MIT — see [LICENSE](LICENSE).
