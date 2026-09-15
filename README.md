@@ -365,6 +365,13 @@ Being upfront about what this can't do:
   as a fake spike. What counts as "several" depends on how many channels
   you're watching; if Trending comes back empty, try
   `python trends.py --min-channels 2` and raise it from there.
+- **Trending doesn't work on non-Latin scripts.** It splits text into
+  words using a pattern that only matches Latin letters (English,
+  German, French, and similar). Channels posting in Arabic, Russian,
+  Chinese, or another non-Latin script will tokenize to nothing, so
+  Trending will always come back empty for them — Popular, Random, and
+  Spotlight are unaffected, since they don't need to split text into
+  words at all.
 
 ## Tests
 
