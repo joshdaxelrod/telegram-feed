@@ -18,7 +18,6 @@ Usage:
     python feed.py                       # last 24h, all four feeds, opens popular.html
     python feed.py --mode random --hours 48
     python feed.py --mode trending --min-channels 3
-    python feed.py --tier core
     python feed.py --keywords impfung corona --exclude satire
     python feed.py --no-open              # write files without opening a browser
 """
@@ -179,14 +178,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     text-decoration: none;
   }}
   .channel:hover {{ text-decoration: underline; }}
-  .tier {{
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 20px;
-    background: #e7f3ff;
-    color: #1877f2;
-  }}
   .date {{
     font-size: 12px;
     color: #999;
@@ -308,7 +299,6 @@ CARD_TEMPLATE = """  <div class="card" data-search="{search_key}">
     <div class="card-header">
       <span class="rank">#{rank}</span>
       <a class="channel" href="https://t.me/{channel}" target="_blank">@{channel}</a>
-      <span class="tier">{tier}</span>
       <span class="date">{date}</span>
     </div>
     <div class="text">{text}</div>
@@ -399,7 +389,6 @@ def _render_cards(
         cards.append(CARD_TEMPLATE.format(
             rank=i,
             channel=_escape(msg["channel"]),
-            tier=_escape(msg["tier"]),
             date=date,
             text=text,
             views=msg["views"],
@@ -469,7 +458,7 @@ def _render_terms(terms: list[dict], subtitle: str, baseline_hours: int | None =
 def _write_csv(path: Path, messages: list[dict]):
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=[
-            "rank", "channel", "tier", "date", "text",
+            "rank", "channel", "date", "text",
             "views", "virality_score", "channel_count", "url",
         ])
         writer.writeheader()
@@ -477,7 +466,6 @@ def _write_csv(path: Path, messages: list[dict]):
             writer.writerow({
                 "rank": i,
                 "channel": msg["channel"],
-                "tier": msg["tier"],
                 "date": msg["date"][:16].replace("T", " ") + " UTC",
                 "text": (msg["text"] or "").strip(),
                 "views": msg["views"],
@@ -490,28 +478,28 @@ def _write_csv(path: Path, messages: list[dict]):
 def build_feed(
     mode: str,
     hours: int = 24,
-    tier: str | None = None,
     limit: int = 100,
     per_channel: int = 1,
     keywords: list[str] | None = None,
     exclude: list[str] | None = None,
     seed: int | None = None,
 ) -> Path:
+    label = None
     if keywords:
-        messages = get_keyword_messages(keywords=keywords, exclude=exclude, hours=hours, tier=tier, limit=limit)
+        messages = get_keyword_messages(keywords=keywords, exclude=exclude, hours=hours, limit=limit)
         label = ", ".join(keywords)
     elif mode == "random":
-        messages = get_random_messages(hours=hours, tier=tier, limit=limit, seed=seed)
-        label = tier or "all tiers"
+        messages = get_random_messages(hours=hours, limit=limit, seed=seed)
     elif mode == "spotlight":
-        messages = get_spotlight_messages(hours=hours, tier=tier, per_channel=per_channel, limit=limit, seed=seed)
-        label = tier or "all tiers"
+        messages = get_spotlight_messages(hours=hours, per_channel=per_channel, limit=limit, seed=seed)
     else:
-        messages = get_top_messages(hours=hours, tier=tier, limit=limit)
-        label = tier or "all tiers"
+        messages = get_top_messages(hours=hours, limit=limit)
 
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    subtitle = f"{len(messages)} posts &middot; last {hours}h &middot; {label} &middot; generated {generated}"
+    subtitle = f"{len(messages)} posts &middot; last {hours}h"
+    if label:
+        subtitle += f" &middot; {label}"
+    subtitle += f" &middot; generated {generated}"
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     html_path = DATA_DIR / f"{mode}.html"
@@ -527,19 +515,17 @@ def build_feed(
 def build_trending_feed(
     hours: int = 24,
     baseline_hours: int = 168,
-    tier: str | None = None,
     top_n: int = 20,
     min_recent_count: int = 3,
     min_channels: int = 5,
     detail_limit: int = 50,
 ) -> Path:
     terms = get_trending_terms(
-        recent_hours=hours, baseline_hours=baseline_hours, tier=tier,
+        recent_hours=hours, baseline_hours=baseline_hours,
         top_n=top_n, min_recent_count=min_recent_count, min_channels=min_channels,
     )
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    label = tier or "all tiers"
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     back_link = '<div class="back-link"><a href="trending.html">&#8592; back to trending</a></div>'
 
@@ -553,10 +539,10 @@ def build_trending_feed(
     for t in terms:
         slug = _slugify(t["term"])
         detail_path = DATA_DIR / f"trending_{slug}.html"
-        detail_messages = get_keyword_messages(keywords=[t["term"]], hours=hours, tier=tier, limit=detail_limit)
+        detail_messages = get_keyword_messages(keywords=[t["term"]], hours=hours, limit=detail_limit)
         detail_subtitle = (
             f"{len(detail_messages)} posts matching &#8220;{_escape(t['term'])}&#8221; "
-            f"&middot; last {hours}h &middot; {label} &middot; generated {generated}"
+            f"&middot; last {hours}h &middot; generated {generated}"
         )
         detail_html = _render_cards(
             detail_messages, title=f"“{t['term']}”", subtitle=detail_subtitle,
@@ -566,7 +552,7 @@ def build_trending_feed(
         _write_csv(DATA_DIR / f"trending_{slug}.csv", detail_messages)
         t["detail_href"] = detail_path.name
 
-    subtitle = f"{len(terms)} trending terms &middot; last {hours}h vs {baseline_hours}h baseline &middot; {label} &middot; generated {generated}"
+    subtitle = f"{len(terms)} trending terms &middot; last {hours}h vs {baseline_hours}h baseline &middot; generated {generated}"
     index_path = DATA_DIR / "trending.html"
     index_path.write_text(_render_terms(terms, subtitle=subtitle, baseline_hours=baseline_hours), encoding="utf-8")
 
@@ -587,7 +573,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate browsable HTML feeds of scraped posts")
     parser.add_argument("--mode", choices=["popular", "random", "spotlight", "trending", "all"], default="all")
     parser.add_argument("--hours", type=int, default=24)
-    parser.add_argument("--tier")
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--per-channel", type=int, default=1, help="Posts per channel in the spotlight feed")
     parser.add_argument("--seed", type=int, help="Random seed, for a reproducible random/spotlight feed")
@@ -605,12 +590,12 @@ if __name__ == "__main__":
     for mode in modes:
         if mode == "trending":
             path = build_trending_feed(
-                hours=args.hours, baseline_hours=args.baseline_hours, tier=args.tier,
+                hours=args.hours, baseline_hours=args.baseline_hours,
                 min_recent_count=args.min_count, min_channels=args.min_channels,
             )
         else:
             path = build_feed(
-                mode, hours=args.hours, tier=args.tier, limit=args.limit,
+                mode, hours=args.hours, limit=args.limit,
                 per_channel=args.per_channel, keywords=args.keywords,
                 exclude=args.exclude, seed=args.seed,
             )

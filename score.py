@@ -27,29 +27,26 @@ def virality_score(views: int) -> float:
     return float(views)
 
 
-def _fetch_window(conn, since: str, tier: str | None) -> list[dict]:
-    tier_clause = "AND tier = :tier" if tier else ""
-    query = f"""
-        SELECT channel, tier, message_id, date, text, views, media_type
+def _fetch_window(conn, since: str) -> list[dict]:
+    query = """
+        SELECT channel, message_id, date, text, views, media_type
         FROM messages
         WHERE date >= :since
           AND text != ''
-          {tier_clause}
     """
-    rows = conn.execute(query, {"since": since, "tier": tier}).fetchall()
+    rows = conn.execute(query, {"since": since}).fetchall()
     return [dict(r) for r in rows if not is_junk(r["text"] or "")]
 
 
 def get_top_messages(
     hours: int = 24,
-    tier: str | None = None,
     limit: int = 50,
     max_per_channel: int = 5,
 ) -> list[dict]:
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
 
     with get_conn() as conn:
-        candidates = _fetch_window(conn, since, tier)
+        candidates = _fetch_window(conn, since)
 
     candidates.sort(key=lambda r: r["views"], reverse=True)
 
@@ -79,7 +76,6 @@ def get_top_messages(
 
 def get_random_messages(
     hours: int = 24,
-    tier: str | None = None,
     limit: int = 30,
     seed: int | None = None,
 ) -> list[dict]:
@@ -88,7 +84,7 @@ def get_random_messages(
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
 
     with get_conn() as conn:
-        candidates = _fetch_window(conn, since, tier)
+        candidates = _fetch_window(conn, since)
 
     rng = random.Random(seed)
     rng.shuffle(candidates)
@@ -102,7 +98,6 @@ def get_random_messages(
 
 def get_spotlight_messages(
     hours: int = 24,
-    tier: str | None = None,
     per_channel: int = 1,
     limit: int | None = 100,
     seed: int | None = None,
@@ -114,7 +109,7 @@ def get_spotlight_messages(
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
 
     with get_conn() as conn:
-        candidates = _fetch_window(conn, since, tier)
+        candidates = _fetch_window(conn, since)
 
     by_channel: dict[str, list[dict]] = {}
     for r in candidates:
@@ -143,26 +138,23 @@ def get_keyword_messages(
     keywords: list[str],
     exclude: list[str] | None = None,
     hours: int = 168,
-    tier: str | None = None,
     limit: int = 100,
 ) -> list[dict]:
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
-    tier_clause = "AND tier = :tier" if tier else ""
     kw_clause = " OR ".join(f"LOWER(text) LIKE :kw{i}" for i in range(len(keywords)))
     exc_clause = " AND ".join(f"LOWER(text) NOT LIKE :ex{i}" for i in range(len(exclude or [])))
     exc_clause = f"AND ({exc_clause})" if exc_clause else ""
-    params = {"since": since, "tier": tier}
+    params = {"since": since}
     for i, kw in enumerate(keywords):
         params[f"kw{i}"] = f"%{kw.lower()}%"
     for i, ex in enumerate(exclude or []):
         params[f"ex{i}"] = f"%{ex.lower()}%"
 
     query = f"""
-        SELECT channel, tier, message_id, date, text, views, media_type
+        SELECT channel, message_id, date, text, views, media_type
         FROM messages
         WHERE date >= :since
           AND text != ''
-          {tier_clause}
           AND ({kw_clause})
           {exc_clause}
         ORDER BY views DESC
@@ -186,17 +178,16 @@ def get_keyword_messages(
     return results
 
 
-def print_digest(hours: int = 24, tier: str | None = None, top_n: int = 20):
-    messages = get_top_messages(hours=hours, tier=tier, limit=top_n * 2)[:top_n]
+def print_digest(hours: int = 24, top_n: int = 20):
+    messages = get_top_messages(hours=hours, limit=top_n * 2)[:top_n]
 
-    label = tier or "all tiers"
-    print(f"\n=== Top {top_n} viral messages — last {hours}h ({label}) ===\n")
+    print(f"\n=== Top {top_n} viral messages — last {hours}h ===\n")
 
     for i, msg in enumerate(messages, 1):
         date = msg["date"][:16].replace("T", " ")
         snippet = (msg["text"] or "")[:200].replace("\n", " ")
         print(
-            f"{i:2}. [{msg['tier']}] @{msg['channel']} | {date}\n"
+            f"{i:2}. @{msg['channel']} | {date}\n"
             f"    views={msg['views']}  score={msg['virality_score']:.0f}\n"
             f"    {snippet}\n"
         )
@@ -207,8 +198,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--hours", type=int, default=24)
-    parser.add_argument("--tier")
     parser.add_argument("--top", type=int, default=20)
     args = parser.parse_args()
 
-    print_digest(hours=args.hours, tier=args.tier, top_n=args.top)
+    print_digest(hours=args.hours, top_n=args.top)

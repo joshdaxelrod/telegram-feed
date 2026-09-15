@@ -21,7 +21,6 @@ def init_db():
             CREATE TABLE IF NOT EXISTS messages (
                 id          INTEGER PRIMARY KEY,
                 channel     TEXT NOT NULL,
-                tier        TEXT NOT NULL,
                 message_id  INTEGER NOT NULL,
                 date        TEXT NOT NULL,
                 text        TEXT,

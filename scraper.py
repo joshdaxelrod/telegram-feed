@@ -4,7 +4,6 @@ via the public web interface (t.me/s/channel). No API credentials needed.
 
 Usage:
     python scraper.py              # scrape all channels
-    python scraper.py --tier core  # scrape only channels tagged "core"
     python scraper.py --limit 10   # test with 10 channels
 """
 
@@ -45,7 +44,7 @@ HEADERS = {
 def _parse_count(text: str) -> int:
     if not text:
         return 0
-    text = text.strip().replace(" ", "").replace(",", "")
+    text = text.strip().replace(" ", "").replace(",", "")
     try:
         if text.endswith("K"):
             return int(float(text[:-1]) * 1_000)
@@ -66,7 +65,7 @@ def _media_type(msg) -> Optional[str]:
     return None
 
 
-def scrape_channel(handle: str, tier: str, since: datetime, conn: sqlite3.Connection):
+def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
     scraped_at = datetime.now(timezone.utc).isoformat()
     count = 0
     url = f"https://t.me/s/{handle}"
@@ -128,12 +127,12 @@ def scrape_channel(handle: str, tier: str, since: datetime, conn: sqlite3.Connec
                 conn.execute(
                     """
                     INSERT OR IGNORE INTO messages
-                        (channel, tier, message_id, date, text, views,
+                        (channel, message_id, date, text, views,
                          is_forward, media_type, scraped_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
-                        handle, tier, message_id, msg_date.isoformat(),
+                        handle, message_id, msg_date.isoformat(),
                         text, views, is_forward,
                         _media_type(msg), scraped_at,
                     ),
@@ -154,28 +153,26 @@ def scrape_channel(handle: str, tier: str, since: datetime, conn: sqlite3.Connec
 
 
 def _worker(args):
-    handle, tier, since = args
+    handle, since = args
     conn = get_conn()
     try:
-        scrape_channel(handle, tier, since, conn)
+        scrape_channel(handle, since, conn)
     finally:
         conn.close()
     return handle
 
 
-def run(tier_filter=None, limit=None, hours=LOOKBACK_HOURS):
+def run(limit=None, hours=LOOKBACK_HOURS):
     init_db()
     since = datetime.now(timezone.utc) - timedelta(hours=hours)
 
     channels = get_all_monitored()
-    if tier_filter:
-        channels = [(h, t) for h, t in channels if t == tier_filter]
     if limit:
         channels = channels[:limit]
 
     log.info(f"Scraping {len(channels)} channels via web (last {hours}h, {WORKERS} workers)")
 
-    tasks = [(handle, tier, since) for handle, tier in channels]
+    tasks = [(handle, since) for handle in channels]
     total = len(tasks)
     done = 0
 
@@ -199,8 +196,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--hours", type=int, default=LOOKBACK_HOURS)
-    parser.add_argument("--tier", help="Only scrape channels with this tier label from channels.csv")
     parser.add_argument("--limit", type=int)
     args = parser.parse_args()
 
-    run(tier_filter=args.tier, limit=args.limit, hours=args.hours)
+    run(limit=args.limit, hours=args.hours)

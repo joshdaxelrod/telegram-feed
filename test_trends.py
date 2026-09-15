@@ -16,8 +16,8 @@ def _insert_message(conn, channel, message_id, text, hours_ago, views=100):
     now = datetime.now(timezone.utc)
     date = (now - timedelta(hours=hours_ago)).isoformat()
     conn.execute(
-        "INSERT OR IGNORE INTO messages (channel, tier, message_id, date, text, views, is_forward, media_type, scraped_at) VALUES (?,?,?,?,?,?,?,?,?)",
-        (channel, "tier1", message_id, date, text, views, 0, None, now.isoformat()),
+        "INSERT OR IGNORE INTO messages (channel, message_id, date, text, views, is_forward, media_type, scraped_at) VALUES (?,?,?,?,?,?,?,?)",
+        (channel, message_id, date, text, views, 0, None, now.isoformat()),
     )
     conn.commit()
 
@@ -97,21 +97,3 @@ def test_term_with_high_baseline_is_not_treated_as_new_spike(tmp_path):
     dauerthema = next(r for r in results if r["term"] == "dauerthema")
     # a term mentioned at roughly its normal rate should score near 1x, not read as a spike
     assert dauerthema["score"] < 1.5
-
-
-def test_respects_tier_filter(tmp_path):
-    db_path = _setup_db(tmp_path)
-    as_of = datetime.now(timezone.utc)
-    with patch.object(db, "DB_PATH", db_path):
-        conn = db.get_conn()
-        conn.execute(
-            "INSERT INTO messages (channel, tier, message_id, date, text, views, is_forward, media_type, scraped_at) VALUES (?,?,?,?,?,?,?,?,?)",
-            ("chan_x", "tier2", 1, (as_of - timedelta(hours=1)).isoformat(), "Exklusivbericht Sonderthema heute", 100, 0, None, as_of.isoformat()),
-        )
-        conn.commit()
-
-        results = trends.get_trending_terms(
-            recent_hours=24, tier="tier1", min_recent_count=1, min_channels=1, as_of=as_of,
-        )
-
-    assert results == []

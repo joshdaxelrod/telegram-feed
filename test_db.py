@@ -30,16 +30,16 @@ def test_messages_unique_constraint(tmp_path):
     db_path = make_temp_db(tmp_path)
     conn = sqlite3.connect(db_path)
     now = datetime.now(timezone.utc).isoformat()
-    row = ("channel_a", "tier1", 42, now, "hello", 100, 0, None, now)
+    row = ("channel_a", 42, now, "hello", 100, 0, None, now)
     conn.execute(
-        "INSERT INTO messages (channel, tier, message_id, date, text, views, is_forward, media_type, scraped_at) VALUES (?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO messages (channel, message_id, date, text, views, is_forward, media_type, scraped_at) VALUES (?,?,?,?,?,?,?,?)",
         row,
     )
     conn.commit()
 
     # Second insert of same (channel, message_id) should be ignored
     conn.execute(
-        "INSERT OR IGNORE INTO messages (channel, tier, message_id, date, text, views, is_forward, media_type, scraped_at) VALUES (?,?,?,?,?,?,?,?,?)",
+        "INSERT OR IGNORE INTO messages (channel, message_id, date, text, views, is_forward, media_type, scraped_at) VALUES (?,?,?,?,?,?,?,?)",
         row,
     )
     conn.commit()

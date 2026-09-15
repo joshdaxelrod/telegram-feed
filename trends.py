@@ -17,7 +17,7 @@ raise it if results look like noise.
 Usage:
     python trends.py                              # last 24h vs last 7 days
     python trends.py --recent-hours 6 --baseline-hours 168 --min-channels 3
-    python trends.py --tier core --top 10
+    python trends.py --top 10
 """
 
 import argparse
@@ -67,16 +67,14 @@ def _terms(text: str) -> set[str]:
     return set(tokens) | set(bigrams)
 
 
-def _fetch_range(conn, since: str, until: str, tier: str | None) -> list[dict]:
-    tier_clause = "AND tier = :tier" if tier else ""
-    query = f"""
-        SELECT channel, tier, message_id, date, text
+def _fetch_range(conn, since: str, until: str) -> list[dict]:
+    query = """
+        SELECT channel, message_id, date, text
         FROM messages
         WHERE date >= :since AND date < :until
           AND text != ''
-          {tier_clause}
     """
-    rows = conn.execute(query, {"since": since, "until": until, "tier": tier}).fetchall()
+    rows = conn.execute(query, {"since": since, "until": until}).fetchall()
     return [dict(r) for r in rows if not is_junk(r["text"] or "")]
 
 
@@ -90,7 +88,6 @@ def _count_terms(messages: list[dict]) -> Counter:
 def get_trending_terms(
     recent_hours: int = 24,
     baseline_hours: int = 168,
-    tier: str | None = None,
     top_n: int = 20,
     min_recent_count: int = 3,
     min_channels: int = 5,
@@ -109,8 +106,8 @@ def get_trending_terms(
     baseline_span_hours = max(baseline_hours - recent_hours, 1)
 
     with get_conn() as conn:
-        recent_msgs = _fetch_range(conn, recent_since, now_iso, tier)
-        baseline_msgs = _fetch_range(conn, baseline_since, recent_since, tier)
+        recent_msgs = _fetch_range(conn, recent_since, now_iso)
+        baseline_msgs = _fetch_range(conn, baseline_since, recent_since)
 
     recent_counts = _count_terms(recent_msgs)
     baseline_counts = _count_terms(baseline_msgs)
@@ -152,20 +149,18 @@ def get_trending_terms(
 def print_trending(
     recent_hours: int = 24,
     baseline_hours: int = 168,
-    tier: str | None = None,
     top_n: int = 20,
     min_recent_count: int = 3,
     min_channels: int = 5,
     as_of: datetime | None = None,
 ):
     results = get_trending_terms(
-        recent_hours=recent_hours, baseline_hours=baseline_hours, tier=tier,
+        recent_hours=recent_hours, baseline_hours=baseline_hours,
         top_n=top_n, min_recent_count=min_recent_count, min_channels=min_channels,
         as_of=as_of,
     )
 
-    label = tier or "all tiers"
-    print(f"\n=== Trending terms — last {recent_hours}h vs {baseline_hours}h baseline ({label}) ===\n")
+    print(f"\n=== Trending terms — last {recent_hours}h vs {baseline_hours}h baseline ===\n")
 
     if not results:
         print(f"Nothing met the threshold (min {min_recent_count} mentions on {min_channels}+ channels).")
@@ -184,7 +179,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find trending terms across monitored channels")
     parser.add_argument("--recent-hours", type=int, default=24)
     parser.add_argument("--baseline-hours", type=int, default=168)
-    parser.add_argument("--tier")
     parser.add_argument("--top", type=int, default=20)
     parser.add_argument("--min-count", type=int, default=3, help="Minimum mentions in the recent window to qualify")
     parser.add_argument("--min-channels", type=int, default=5, help="Minimum distinct channels a term must appear on")
@@ -192,6 +186,6 @@ if __name__ == "__main__":
 
     print_trending(
         recent_hours=args.recent_hours, baseline_hours=args.baseline_hours,
-        tier=args.tier, top_n=args.top, min_recent_count=args.min_count,
+        top_n=args.top, min_recent_count=args.min_count,
         min_channels=args.min_channels,
     )

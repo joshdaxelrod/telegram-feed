@@ -156,20 +156,30 @@ if a channel's link is `t.me/somechannel`, its handle is `somechannel`.
 monitor is an editorial call, not something this tool should assume or
 publish for you.
 
-**Optional — grouping channels.** If you want to filter by group later
-(e.g. checking only your highest-priority channels, or only the ones in a
-given language), add a second column called `tier` and put any label you
-want in it:
+## Finding channels to monitor
 
-```csv
-handle,tier
-somechannel,core
-otherchannel,watch
-```
+This tool is only as good as the list you give it — it doesn't discover
+anything on its own, it just watches the channels you already know about.
+A few ways I actually build that list:
 
-The label can be anything — it has no built-in meaning, it's just there
-so you can filter with `--tier core` later on. If you don't need this,
-skip it; every command below works fine with just a handle column.
+- **Follow the forwards.** Once you've found one relevant channel, check
+  what it reposts from and who reposts it. Telegram shows the original
+  source on any forwarded message, which is usually the fastest way to
+  map out a whole network starting from a single channel.
+- **Search Telegram itself.** Telegram's in-app search can surface
+  channels by keyword or topic.
+- **Look for existing research.** Depending on your beat, researchers,
+  NGOs, or academic projects sometimes maintain curated, categorized
+  channel lists (for extremism, disinformation, election monitoring, and
+  so on, in a given country or language). Search for one relevant to your
+  beat before building a list from scratch.
+- **Watch who officials and outlets link to.** Politicians, movement
+  figures, and partisan outlets often plug their own or allied channels
+  in posts, bios, or on other platforms.
+- **Revisit the list periodically.** Channels go private, get deleted, or
+  get replaced by a "backup channel" after a ban. `audit_channels.py`
+  (see below) catches channels that have gone dead, but it won't find new
+  ones for you — that part stays a human judgment call.
 
 ## Usage
 
@@ -187,11 +197,10 @@ the last 24 hours into a local file, `data/messages.db`. You'll see a
 line per channel (e.g. `tagesschau: 146 new messages`) as it goes — when
 it prints `Done.`, it's finished.
 
-To look further back, or scrape only one tier:
+To look further back:
 
 ```bash
 python scraper.py --hours 72     # last 3 days instead of 24 hours
-python scraper.py --tier core    # only channels tagged "core"
 ```
 
 ### 2. Generate the feed
@@ -206,10 +215,10 @@ at the top of the page to switch between Trending, Popular, Random, and
 Spotlight — each one also has a search box, and hovering the "?" next to
 the title explains what that page is showing.
 
-To regenerate for a different window or tier:
+To regenerate for a different window:
 
 ```bash
-python feed.py --hours 48 --tier core
+python feed.py --hours 48
 ```
 
 ### 3. Search everything you've ever scraped
@@ -234,8 +243,23 @@ message — usually a wrong handle, or a channel that's gone private or
 been deleted. Add `--prune` to remove them from `channels.csv`
 automatically (it asks you to confirm first).
 
-Feeds and the database are written to `data/`, which is also left out of
-the repository — it's your scraped data, not part of the tool itself.
+## Where your data lives
+
+Everything gets written into a `data/` folder, which is left out of the
+repository — it's your scraped data, not part of the tool itself.
+
+- **`data/messages.db`** is the database every scraped post goes into.
+  Running the scraper again doesn't overwrite or duplicate anything — it
+  just adds newly-seen posts and quietly skips ones it's already saved,
+  so this file only ever grows. Nothing here is cleaned up automatically;
+  if it gets too big, you can delete it and start fresh, but there's no
+  getting back history you didn't capture at the time — Telegram's
+  preview pages only show recent posts.
+- **The feed pages** (`data/popular.html`, `data/trending.html`, and so
+  on, plus their matching `.csv` files) are different: each one is a
+  snapshot of "right now." Running `feed.py` again completely overwrites
+  whichever feed you regenerate. If you want to keep a particular page
+  around for reference, copy the file elsewhere first.
 
 ## Customizing for your channels
 
@@ -256,8 +280,8 @@ instead of real topics.
 The scraper hits `t.me/s/<channel>` with a pool of 10 workers running at
 once, across every channel in your list. Be a considerate scraper: keep
 your channel list to what you actually need, don't run it more often than
-your work requires, and back off (lower `WORKERS` in `scraper.py`, or
-scrape a smaller `--tier` at a time) if you notice requests failing.
+your work requires, and lower `WORKERS` in `scraper.py` if you notice
+requests failing.
 
 ## Limitations
 

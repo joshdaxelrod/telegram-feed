@@ -28,14 +28,14 @@ def audit(min_msgs: int = 1) -> dict:
     low = []        # in our list, fewer than min_msgs
     active = []     # in our list, at least min_msgs messages
 
-    for handle, tier in monitored:
+    for handle in monitored:
         n = counts.get(handle, 0)
         if n == 0:
-            dead.append((handle, tier, n))
+            dead.append((handle, n))
         elif n < min_msgs:
-            low.append((handle, tier, n))
+            low.append((handle, n))
         else:
-            active.append((handle, tier, n))
+            active.append((handle, n))
 
     return {
         "monitored": len(monitored),
@@ -61,28 +61,24 @@ def print_report(result: dict, min_msgs: int):
 
     if dead:
         print(f"--- Dead channels ({len(dead)}) — private, deleted, or wrong handle ---")
-        by_tier: dict[str, list] = {}
-        for h, t, n in dead:
-            by_tier.setdefault(t, []).append(h)
-        for tier, handles in sorted(by_tier.items()):
-            print(f"  [{tier}] " + ", ".join(f"@{h}" for h in handles))
+        print("  " + ", ".join(f"@{h}" for h, _ in dead))
         print()
 
     if low and min_msgs > 1:
         print(f"--- Low-activity channels (<{min_msgs} msgs) ---")
-        for handle, tier, n in sorted(low, key=lambda x: x[2]):
-            print(f"  [{tier}] @{handle}: {n} message(s)")
+        for handle, n in sorted(low, key=lambda x: x[1]):
+            print(f"  @{handle}: {n} message(s)")
         print()
 
 
 def prune(dead: list):
-    dead_handles = {h for h, _, _ in dead}
-    remaining = [(h, t) for h, t in load_channels() if h not in dead_handles]
+    dead_handles = {h for h, _ in dead}
+    remaining = [h for h in load_channels() if h not in dead_handles]
 
     with REGISTRY_PATH.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["handle", "tier"])
-        writer.writerows(remaining)
+        writer.writerow(["handle"])
+        writer.writerows([[h] for h in remaining])
 
     print(f"Pruned {len(dead_handles)} dead channels from {REGISTRY_PATH.name} ({len(remaining)} remain).")
 

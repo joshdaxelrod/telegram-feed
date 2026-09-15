@@ -7,7 +7,7 @@ chronologically — showing which channels picked it up, when, and in what order
 Usage:
     python trace.py "Döpfner Zionist"
     python trace.py "mask mandate" --hours 168
-    python trace.py "Hantavirus" --hours 72 --tier watch
+    python trace.py "Hantavirus" --hours 72
 """
 
 import argparse
@@ -16,22 +16,20 @@ from datetime import datetime, timedelta, timezone
 from db import get_conn
 
 
-def trace(query: str, hours: int = 168, tier: str | None = None) -> list[dict]:
+def trace(query: str, hours: int = 168) -> list[dict]:
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
-    tier_clause = "AND tier = :tier" if tier else ""
 
     terms = query.split()
     like_clauses = " AND ".join(f"text LIKE :term{i}" for i in range(len(terms)))
-    params = {"since": since, "tier": tier}
+    params = {"since": since}
     for i, term in enumerate(terms):
         params[f"term{i}"] = f"%{term}%"
 
     sql = f"""
-        SELECT channel, tier, message_id, date, text, views
+        SELECT channel, message_id, date, text, views
         FROM messages
         WHERE date >= :since
           AND text != ''
-          {tier_clause}
           AND {like_clauses}
         ORDER BY date ASC
     """
@@ -42,8 +40,8 @@ def trace(query: str, hours: int = 168, tier: str | None = None) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def print_trace(query: str, hours: int = 168, tier: str | None = None):
-    results = trace(query, hours=hours, tier=tier)
+def print_trace(query: str, hours: int = 168):
+    results = trace(query, hours=hours)
 
     if not results:
         print(f"\nNo messages found matching '{query}' in the last {hours}h.")
@@ -61,7 +59,7 @@ def print_trace(query: str, hours: int = 168, tier: str | None = None):
         snippet = (r["text"] or "").replace("\n", " ")[:160]
         post_url = f"https://t.me/{r['channel']}/{r['message_id']}"
 
-        print(f"[{offset:>8}]  [{r['tier']}] @{r['channel']}  {date_str} UTC")
+        print(f"[{offset:>8}]  @{r['channel']}  {date_str} UTC")
         print(f"           views={r['views']}")
         print(f"           {snippet}")
         print(f"           {post_url}")
@@ -72,7 +70,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Trace a claim across the channel network")
     parser.add_argument("query", help="Search terms (space-separated, all must match)")
     parser.add_argument("--hours", type=int, default=168)
-    parser.add_argument("--tier")
     args = parser.parse_args()
 
-    print_trace(args.query, hours=args.hours, tier=args.tier)
+    print_trace(args.query, hours=args.hours)
