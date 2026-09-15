@@ -303,33 +303,24 @@ adjust once you know what your own channels actually look like.
 from the feeds. Open the file and you'll see `AD_PATTERNS` and
 `PROMO_PATTERNS` — lists of phrases like `"subscribe now"` or `"buy
 now"`. If your channels use different spam phrases (in English or any
-other language), you have the same two options as `trends.py` below:
-
-- **Recommended — a personal, private addition.** Create a file called
-  `filters.local.txt`, one spam phrase per line (lines starting with `#`
-  are ignored, for your own notes). Any post containing one of those
-  phrases gets filtered, on top of the shipped `AD_PATTERNS` /
-  `PROMO_PATTERNS` — no code editing required, and like
-  `stopwords.local.txt` below, it's git-ignored so it stays private. An
-  AI assistant can help here too: paste in a handful of real ad/promo
-  posts from your own channels and ask something like *"what phrases in
-  here are advertising or 'subscribe to our channel' spam? List each one
-  on its own line, exactly as it appears"* — it's often faster at
-  spotting the pattern across examples than doing it by eye.
-- **Alternative — edit the shipped lists directly.** Copy an existing
-  line in `AD_PATTERNS` / `PROMO_PATTERNS`, swap the phrase inside the
-  quotes for one you actually see, and leave the rest of the line as-is.
+other language), create a file called `filters.local.txt`, one spam
+phrase per line (lines starting with `#` are ignored, for your own
+notes). Any post containing one of those phrases gets filtered, on top
+of the shipped `AD_PATTERNS` / `PROMO_PATTERNS` — no code editing
+required, and like `channels.csv`, it's git-ignored so it stays private.
+An AI assistant can help here too: paste in a handful of real ad/promo
+posts from your own channels and ask something like *"what phrases in
+here are advertising or 'subscribe to our channel' spam? List each one
+on its own line, exactly as it appears"* — it's often faster at spotting
+the pattern across examples than doing it by eye.
 
 **`trends.py`** has its own `STOPWORDS` list — common filler words
 ("the," "and," "also") that get ignored so the Trending page surfaces
 real topics instead of grammar. If your channels post in a language
 other than English, this list won't catch that language's filler words,
 and Trending will fill up with meaningless function words instead of
-real topics. Two ways to fix it:
-
-**Recommended — a personal, private addition.** Create a file called
-`stopwords.local.txt` in this same folder, with one filler word per
-line:
+real topics. To fix it, create a file called `stopwords.local.txt` in
+this same folder, with one filler word per line:
 
 ```
 der
@@ -354,15 +345,9 @@ actually work (off-the-shelf English/German lists from libraries like
 NLTK run 200–600+ words), and it's much faster to trim a list that's too
 aggressive than to keep finding one leaked word at a time.
 
-**Alternative — edit the shipped list directly.** If you'd simply rather
-replace the English words outright than keep a separate file, open
-`trends.py`, find the line that starts `STOPWORDS = {`, and replace the
-words between the curly braces `{ }` with your own — each one in quotes,
-separated by commas, same shape as what's already there.
-
-Either way: save, then run `python trends.py` again. If it's still
-mostly grammar instead of real topics, you're missing some common
-words — add them the same way.
+Save, then run `python trends.py` again. If it's still mostly grammar
+instead of real topics, you're missing some common words — add them the
+same way.
 
 If you're monitoring channels in a language you don't read yourself, you
 don't need to translate anything by hand: Chrome's built-in translate
