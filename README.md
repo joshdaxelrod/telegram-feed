@@ -36,9 +36,6 @@ Happy monitoring!
 
 ## Screenshots
 
-*(Demo data below is from a handful of mainstream news channels — not a
-real research target list.)*
-
 **Trending** — a narrative taking off across multiple channels, before it's an obviously "popular" post:
 
 <img src="screenshots/trending.png" width="600" alt="Trending feed">
@@ -297,16 +294,10 @@ repository — it's your scraped data, not part of the tool itself.
 
 ## Customizing for your channels
 
-Two files ship with generic English examples that you'll likely want to
-adjust once you know what your own channels actually look like. Both
-work the same way: you add a plain text file with your own words or
-phrases in it, one per line, and it gets read automatically every time
-you run the tool — you never have to touch the actual code. These files
-live only on your computer. They're never uploaded anywhere, including
-to GitHub, even if you download updates to the tool later — that's set
-up the same way `channels.csv` (your channel list) already works, so
-your personal customizations and the shared code stay completely
-separate.
+You'll likely want to adjust two things once you know what your own
+channels actually look like. Both work the same way: add a plain text
+file with your own words or phrases in it, one per line, and it gets
+picked up automatically.
 
 **Filtering out ads and spam — `filters.local.txt`.** `filters.py`
 drops ads and "subscribe to our backup channel" spam from the feeds
