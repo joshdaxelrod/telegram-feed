@@ -271,8 +271,12 @@ python audit_channels.py
 
 Flags channels in your list that haven't produced a single scraped
 message — usually a wrong handle, or a channel that's gone private or
-been deleted. Add `--prune` to remove them from `channels.csv`
-automatically (it asks you to confirm first).
+been deleted. To remove those flagged channels from `channels.csv`
+automatically (it asks you to confirm first), run:
+
+```bash
+python audit_channels.py --prune
+```
 
 ## Where your data lives
 
