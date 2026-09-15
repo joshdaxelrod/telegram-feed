@@ -293,10 +293,10 @@ website tries to block, and Telegram could begin refusing your requests
 if it decides you're hitting it too hard.
 
 In practice: keep your channel list to what you actually need rather than
-adding channels "just in case," and don't run the scraper more often than
-your work actually requires — every few hours is usually plenty; once a
-minute is not. If you start seeing a lot of `request error` or `HTTP ...`
-warnings in the scraper's output where you didn't before, that's a sign
+adding channels you might not use, and don't run the scraper more often
+than your work actually requires — every few hours is usually plenty;
+once a minute is not. If you start seeing a lot of `request error` or
+`HTTP ...` warnings in the scraper's output where you didn't before, that's a sign
 to slow down: open `scraper.py` and lower the `WORKERS` number near the
 top of the file (10 by default) so fewer requests go out at once.
 
