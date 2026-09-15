@@ -293,7 +293,12 @@ other language), you have the same two options as `trends.py` below:
   are ignored, for your own notes). Any post containing one of those
   phrases gets filtered, on top of the shipped `AD_PATTERNS` /
   `PROMO_PATTERNS` — no code editing required, and like
-  `stopwords.local.txt` below, it's git-ignored so it stays private.
+  `stopwords.local.txt` below, it's git-ignored so it stays private. An
+  AI assistant can help here too: paste in a handful of real ad/promo
+  posts from your own channels and ask something like *"what phrases in
+  here are advertising or 'subscribe to our channel' spam? List each one
+  on its own line, exactly as it appears"* — it's often faster at
+  spotting the pattern across examples than doing it by eye.
 - **Alternative — edit the shipped lists directly.** Copy an existing
   line in `AD_PATTERNS` / `PROMO_PATTERNS`, swap the phrase inside the
   quotes for one you actually see, and leave the rest of the line as-is.
@@ -317,12 +322,20 @@ und
 
 If that file exists, its words are automatically added on top of the
 shipped English list every time you run `trends.py` or `feed.py` — no
-code editing required. It's listed in `.gitignore`, so it stays on your
-computer and never gets committed if you're using git; it's exactly the
-same idea as `channels.csv` being your own private file. The fastest way
-to fill it in: ask an AI assistant like Claude or ChatGPT something like
-*"give me the 100 most common French filler words, one per line, all
-lowercase"* and paste the answer straight into the file.
+code editing required. Lines starting with `#` are ignored, so you can
+organize it into categories (pronouns, verb forms, contractions, and so
+on) for your own reference. It's listed in `.gitignore`, so it stays on
+your computer and never gets committed if you're using git; it's exactly
+the same idea as `channels.csv` being your own private file. The fastest
+way to fill it in: ask an AI assistant like Claude or ChatGPT something
+like *"give me the 300 most common French filler words — articles,
+pronouns, conjunctions, prepositions, and every common form of 'to be'
+and 'to have' — one per line, all lowercase"* and paste the answer
+straight into the file. Aim high rather than low: a real stopword list
+needs a few hundred words to actually work (off-the-shelf English/German
+lists from libraries like NLTK run 200–600+ words), and it's much faster
+to trim a list that's too aggressive than to keep finding one leaked
+word at a time.
 
 **Alternative — edit the shipped list directly.** If you'd rather just
 replace the English words outright (or you're not using git and don't
