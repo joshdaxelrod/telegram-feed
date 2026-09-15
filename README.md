@@ -277,11 +277,21 @@ instead of real topics.
 
 ## A note on scraping etiquette
 
-The scraper hits `t.me/s/<channel>` with a pool of 10 workers running at
-once, across every channel in your list. Be a considerate scraper: keep
-your channel list to what you actually need, don't run it more often than
-your work requires, and lower `WORKERS` in `scraper.py` if you notice
-requests failing.
+"Scraping" just means the script visits each channel's page the same way
+your own browser would — it just does it automatically, and for many
+channels at once (10 at a time, by default). Doing this in moderation is
+completely normal; doing it too aggressively (an enormous channel list,
+or running it constantly) can start to look like the kind of automated
+traffic a website tries to block, and Telegram could begin refusing your
+requests if it decides you're hitting it too hard.
+
+In practice: keep your channel list to what you actually need rather than
+adding channels "just in case," and don't run the scraper more often than
+your work actually requires — every few hours is usually plenty; once a
+minute is not. If you start seeing a lot of `request error` or `HTTP ...`
+warnings in the scraper's output where you didn't before, that's a sign
+to slow down: open `scraper.py` and lower the `WORKERS` number near the
+top of the file (10 by default) so fewer requests go out at once.
 
 ## Limitations
 
@@ -289,7 +299,6 @@ Being upfront about what this can't do:
 
 - **Public channels only.** There's no public preview page for a private
   group or chat, so there's nothing to scrape.
-- **Telegram only.** No Twitter/X, Bluesky, Facebook, or anything else.
 - **Search is literal.** `trace.py` and the search boxes match exact
   text, not variant spellings, typos, or paraphrases.
 - **View counts aren't a verified fact.** They're the only reach signal
