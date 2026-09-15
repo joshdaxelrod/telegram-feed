@@ -4,7 +4,11 @@ relative to how often they normally come up — for spotting a narrative
 taking off before it shows up as an obviously "popular" post.
 
 STOPWORDS below is a STARTING EXAMPLE tuned for German — edit it for your
-own language and channel set, same as filters.py.
+own language and channel set, same as filters.py. You don't have to write
+one by hand: searching "<your language> stopwords list" turns up plenty
+of free, ready-made ones (NLTK's stopwords corpus, for example, covers
+dozens of languages) that you can paste in here in place of the German
+list.
 
 Tune --min-channels to your channel list size: a term only counts as
 trending if it appears on at least that many DISTINCT channels in the

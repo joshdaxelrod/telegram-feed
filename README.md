@@ -273,7 +273,10 @@ channels in another language.
 "the," "and," "also") tuned for German, for the same reason. If your
 channels post in a different language, that list will need editing too,
 or the Trending page will surface a lot of meaningless function words
-instead of real topics.
+instead of real topics. You don't have to build one by hand — searching
+"[your language] stopwords list" turns up plenty of free, ready-made ones
+(NLTK's stopwords corpus, for example, covers dozens of languages) that
+you can drop in as a replacement.
 
 If you're monitoring channels in a language you don't read yourself, you
 don't need to translate anything by hand: Chrome's built-in translate
