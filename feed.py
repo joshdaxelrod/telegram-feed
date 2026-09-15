@@ -18,7 +18,7 @@ Usage:
     python feed.py                       # last 24h, all four feeds, opens trending.html
     python feed.py --mode random --hours 48
     python feed.py --mode trending --min-channels 3
-    python feed.py --keywords impfung corona --exclude satire
+    python feed.py --keywords vaccine election --exclude satire
     python feed.py --no-open              # write files without opening a browser
 """
 
@@ -64,13 +64,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     font-size: 20px;
     font-weight: 700;
     color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }}
   header p {{
     font-size: 13px;
     color: #666;
     margin-top: 4px;
   }}
-  header h1 {{ display: flex; align-items: center; gap: 8px; }}
   .help {{
     display: inline-flex;
     align-items: center;

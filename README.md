@@ -210,7 +210,7 @@ python scraper.py
 
 This visits every channel in `channels.csv` and saves their posts from
 the last 24 hours into a local file, `data/messages.db`. You'll see a
-line per channel (e.g. `tagesschau: 146 new messages`) as it goes — when
+line per channel (e.g. `guardian: 146 new messages`) as it goes — when
 it prints `Done.`, it's finished.
 
 To look further back:
@@ -352,6 +352,12 @@ Being upfront about what this can't do:
   `python trends.py --min-channels 2` and raise it from there.
 
 ## Tests
+
+This isn't part of the everyday workflow — you don't need it to scrape,
+generate feeds, or search. It's an automated check that the code's
+internal logic (scoring, deduplication, trending detection, and so on)
+still works correctly, useful mainly if you edit `filters.py` or
+`trends.py` and want to confirm you haven't broken anything:
 
 ```bash
 python -m pytest

@@ -5,9 +5,9 @@ Given a search term, finds all matching messages in the database sorted
 chronologically — showing which channels picked it up, when, and in what order.
 
 Usage:
-    python trace.py "Döpfner Zionist"
+    python trace.py "election fraud"
     python trace.py "mask mandate" --hours 168
-    python trace.py "Hantavirus" --hours 72
+    python trace.py "bird flu" --hours 72
 """
 
 import argparse
