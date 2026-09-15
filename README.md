@@ -294,22 +294,37 @@ leave the rest of the line as-is.
 real topics instead of grammar. If your channels post in a language
 other than English, this list won't catch that language's filler words,
 and Trending will fill up with meaningless function words instead of
-real topics. To fix it:
+real topics. Two ways to fix it:
 
-1. Open `trends.py` and find the line that starts `STOPWORDS = {` near
-   the top of the file.
-2. Replace the words between the curly braces `{ }` with your own
-   language's common filler words — each one in quotes, separated by
-   commas, same shape as what's already there.
-3. The fastest way to get that list: ask an AI assistant like Claude or
-   ChatGPT something like *"give me the 100 most common French filler
-   words as a Python list of lowercase, quoted strings"* and paste the
-   answer straight in. Searching "[your language] stopwords list" also
-   turns up ready-made ones, though you may need to reformat them into
-   that quotes-and-commas style yourself.
-4. Save the file and run `python trends.py` again. If it's still mostly
-   grammar instead of real topics, you're missing some common words —
-   add them the same way.
+**Recommended — a personal, private addition.** Create a file called
+`stopwords.local.txt` in this same folder, with one filler word per
+line:
+
+```
+der
+die
+und
+```
+
+If that file exists, its words are automatically added on top of the
+shipped English list every time you run `trends.py` or `feed.py` — no
+code editing required. It's listed in `.gitignore`, so it stays on your
+computer and never gets committed if you're using git; it's exactly the
+same idea as `channels.csv` being your own private file. The fastest way
+to fill it in: ask an AI assistant like Claude or ChatGPT something like
+*"give me the 100 most common French filler words, one per line, all
+lowercase"* and paste the answer straight into the file.
+
+**Alternative — edit the shipped list directly.** If you'd rather just
+replace the English words outright (or you're not using git and don't
+need to keep an edit separate), open `trends.py`, find the line that
+starts `STOPWORDS = {`, and replace the words between the curly braces
+`{ }` with your own — each one in quotes, separated by commas, same
+shape as what's already there.
+
+Either way: save, then run `python trends.py` again. If it's still
+mostly grammar instead of real topics, you're missing some common
+words — add them the same way.
 
 If you're monitoring channels in a language you don't read yourself, you
 don't need to translate anything by hand: Chrome's built-in translate

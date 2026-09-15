@@ -25,9 +25,15 @@ import argparse
 import re
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from db import get_conn
 from filters import is_junk
+
+# Personal, git-ignored addition to STOPWORDS below — one word per line.
+# Use this instead of editing STOPWORDS directly if you want your own
+# language's stopwords locally without changing the file everyone shares.
+LOCAL_STOPWORDS_PATH = Path(__file__).parent / "stopwords.local.txt"
 
 STOPWORDS = {
     "the", "a", "an", "this", "that", "these", "those", "it", "its", "he",
@@ -50,6 +56,20 @@ STOPWORDS = {
     "according", "national",
 }
 
+
+def _load_stopwords() -> set[str]:
+    words = set(STOPWORDS)
+    if LOCAL_STOPWORDS_PATH.exists():
+        words |= {
+            line.strip().lower()
+            for line in LOCAL_STOPWORDS_PATH.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        }
+    return words
+
+
+_ACTIVE_STOPWORDS = _load_stopwords()
+
 _TOKEN_RE = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ]{3,}")
 
 
@@ -57,7 +77,7 @@ def _tokenize(text: str) -> list[str]:
     text = re.sub(r"https?://\S+", " ", text)
     text = re.sub(r"@\w+", " ", text)
     tokens = [t.lower() for t in _TOKEN_RE.findall(text)]
-    return [t for t in tokens if t not in STOPWORDS]
+    return [t for t in tokens if t not in _ACTIVE_STOPWORDS]
 
 
 def _terms(text: str) -> set[str]:

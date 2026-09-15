@@ -12,6 +12,10 @@ data/
 # channels.example.csv publicly.
 channels.csv
 
+# Personal stopword additions (e.g. for a non-English channel set) —
+# see trends.py / the README's "Customizing for your channels" section.
+stopwords.local.txt
+
 # Legacy/local test data, not part of the public tool.
 channels.json
 compactmagazin.json

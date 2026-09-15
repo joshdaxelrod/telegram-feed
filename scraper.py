@@ -126,7 +126,7 @@ def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
             try:
                 conn.execute(
                     """
-                    INSERT OR IGNORE INTO messages
+                    INSERT INTO messages
                         (channel, message_id, date, text, views,
                          is_forward, media_type, scraped_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -138,8 +138,12 @@ def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
                     ),
                 )
                 count += 1
-            except sqlite3.IntegrityError:
-                pass
+            except sqlite3.IntegrityError as e:
+                # Expected for a post we've already saved (UNIQUE constraint
+                # on channel+message_id) — anything else (e.g. a schema
+                # mismatch) should be visible, not silently swallowed.
+                if "UNIQUE constraint" not in str(e):
+                    log.warning(f"  {handle}: insert failed — {e}")
 
         conn.commit()
 
