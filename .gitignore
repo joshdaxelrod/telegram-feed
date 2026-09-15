@@ -1,0 +1,18 @@
+.env
+*.session
+*.session-journal
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.claude/
+data/
+
+# Your channel list is your own research target list — ship only
+# channels.example.csv publicly.
+channels.csv
+
+# Legacy/local test data, not part of the public tool.
+channels.json
+compactmagazin.json
+__all_channels.json
