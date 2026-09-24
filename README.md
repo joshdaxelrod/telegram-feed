@@ -134,13 +134,20 @@ cd telegram-feed
 Install the two small libraries this tool depends on:
 
 ```bash
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 `pip` is Python's package installer — this downloads two small helper
 libraries (`requests`, for fetching web pages, and `beautifulsoup4`, for
 reading what's on them) onto your computer. If you see text scroll by
 ending in something like "Successfully installed," it worked.
+
+Always install with `python3 -m pip install ...` rather than plain `pip
+install ...`. If your computer has more than one copy of Python (common
+on Mac), a bare `pip` can quietly install into a different one than the
+`python3` you'll actually run the tool with — so the install "succeeds"
+but the tool still can't find the libraries. Running pip *through*
+`python3` guarantees they match.
 
 Next, create your own list of channels to monitor. A template is
 included:
@@ -203,7 +210,7 @@ Everything below is run from Terminal, from inside the project folder
 ### 1. Scrape
 
 ```bash
-python scraper.py
+python3 scraper.py
 ```
 
 This visits every channel in `channels.csv` and saves their posts from
@@ -214,13 +221,13 @@ it prints `Done.`, it's finished.
 To look further back:
 
 ```bash
-python scraper.py --hours 72     # last 3 days instead of 24 hours
+python3 scraper.py --hours 72     # last 3 days instead of 24 hours
 ```
 
 **The first time you set this up, scrape a full week instead of a day:**
 
 ```bash
-python scraper.py --hours 168    # once, when you're starting out
+python3 scraper.py --hours 168    # once, when you're starting out
 ```
 
 Here's why: the Trending page (below) works by comparing how often a term
@@ -237,7 +244,7 @@ just run the `--hours 168` backfill again.
 ### 2. Generate the feed
 
 ```bash
-python feed.py
+python3 feed.py
 ```
 
 This reads what you've scraped, writes four web pages into a `data/`
@@ -249,13 +256,13 @@ the title explains what that page is showing.
 To regenerate for a different window:
 
 ```bash
-python feed.py --hours 48
+python3 feed.py --hours 48
 ```
 
 ### 3. Search everything you've ever scraped
 
 ```bash
-python trace.py "some name or phrase"
+python3 trace.py "some name or phrase"
 ```
 
 Unlike the feed pages, which only show whatever window you generated them
@@ -266,7 +273,7 @@ started spreading.
 ### 4. Clean up dead channels
 
 ```bash
-python audit_channels.py
+python3 audit_channels.py
 ```
 
 Flags channels in your list that haven't produced a single scraped
@@ -275,7 +282,7 @@ been deleted. To remove those flagged channels from `channels.csv`
 automatically (it asks you to confirm first), run:
 
 ```bash
-python audit_channels.py --prune
+python3 audit_channels.py --prune
 ```
 
 ## Where your data lives
@@ -351,8 +358,8 @@ English/German lists from libraries like NLTK run 200–600+ words), and
 it's much faster to trim a list that's too aggressive than to keep
 finding one leaked word at a time.
 
-Either way, save the file and run the tool again — `python trends.py`
-or `python feed.py` for stopwords, `python feed.py` for filters. If
+Either way, save the file and run the tool again — `python3 trends.py`
+or `python3 feed.py` for stopwords, `python3 feed.py` for filters. If
 Trending is still mostly grammar instead of real topics, you're missing
 some common words; add them the same way.
 
@@ -394,7 +401,7 @@ Being upfront about what this can't do:
   channels, not just several posts — otherwise one copy-pasted post reads
   as a fake spike. What counts as "several" depends on how many channels
   you're watching; if Trending comes back empty, try
-  `python trends.py --min-channels 2` and raise it from there.
+  `python3 trends.py --min-channels 2` and raise it from there.
 - **Trending doesn't work on non-Latin scripts.** It splits text into
   words using a pattern that only matches Latin letters (English,
   German, French, and similar). Channels posting in Arabic, Russian,
