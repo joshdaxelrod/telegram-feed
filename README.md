@@ -131,7 +131,25 @@ cd telegram-feed
 
 ## Setup
 
-Install the two small libraries this tool depends on:
+First, create a private, self-contained copy of Python just for this tool
+(called a "virtual environment"). This avoids two common problems: newer
+Macs often refuse to let you install packages directly ("externally
+managed environment" errors), and if your computer has more than one
+copy of Python installed, it keeps this tool from accidentally using the
+wrong one.
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+You'll know it worked because your Terminal prompt now starts with
+`(venv)`. Do this once per Terminal session — any time you close Terminal
+and come back later to use the tool, run `source venv/bin/activate` again
+first (from inside the project folder) before running any of the commands
+below.
+
+Now install the two small libraries this tool depends on:
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -141,13 +159,6 @@ python3 -m pip install -r requirements.txt
 libraries (`requests`, for fetching web pages, and `beautifulsoup4`, for
 reading what's on them) onto your computer. If you see text scroll by
 ending in something like "Successfully installed," it worked.
-
-Always install with `python3 -m pip install ...` rather than plain `pip
-install ...`. If your computer has more than one copy of Python (common
-on Mac), a bare `pip` can quietly install into a different one than the
-`python3` you'll actually run the tool with — so the install "succeeds"
-but the tool still can't find the libraries. Running pip *through*
-`python3` guarantees they match.
 
 Next, create your own list of channels to monitor. A template is
 included:
@@ -205,7 +216,9 @@ developing a good dataset. A few ways I actually build that list:
 ## Usage
 
 Everything below is run from Terminal, from inside the project folder
-(the one you `cd`'d into during Install).
+(the one you `cd`'d into during Install), with the virtual environment
+activated (`source venv/bin/activate` — your prompt should start with
+`(venv)`; run this again if you'd closed Terminal since Setup).
 
 ### 1. Scrape
 

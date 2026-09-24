@@ -7,6 +7,7 @@ __pycache__/
 .DS_Store
 .claude/
 data/
+venv/
 
 # Your channel list is your own research target list — ship only
 # channels.example.csv publicly.
