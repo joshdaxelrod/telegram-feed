@@ -259,6 +259,9 @@ if a channel's link is `t.me/somechannel`, its handle is `somechannel`.
 uploaded anywhere, including to GitHub, even if you download updates to
 the tool later. That's on purpose: it's your own research list.
 
+**That's it — you're installed.** Everything from here (Usage, below) is
+just running the tool, not setting it up again.
+
 ## Finding channels to monitor
 
 This tool is only as good as the list you give it — it doesn't discover
@@ -291,15 +294,24 @@ developing a good dataset. A few ways I actually build that list:
 ## Usage
 
 Everything below is run from Terminal, from inside the project folder
-(the one you `cd`'d into during Install), with the virtual environment
-activated (your prompt should start with `(venv)` — see Setup for the
-activate command if you'd closed Terminal since then).
+(the one you `cd`'d into during Install).
+
+**Reminder: the virtual environment from Setup needs to be active every
+time**, in every new Terminal window, before any command below will
+work. If your prompt doesn't already start with `(venv)`, run this first
+(from inside the project folder):
+
+```bash
+source venv/bin/activate
+```
 
 <details>
 <summary>Using Windows instead?</summary>
 
-Every command below is written as `python3 ...` — use `python ...`
-instead (drop the `3`) for all of them.
+Activate with `venv\Scripts\activate` (Command Prompt) or
+`venv\Scripts\Activate.ps1` (PowerShell) instead. Every command below is
+also written as `python3 ...` — use `python ...` (drop the `3`) for all
+of them.
 
 </details>
 
