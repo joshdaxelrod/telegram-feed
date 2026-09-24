@@ -293,8 +293,9 @@ developing a good dataset. A few ways I actually build that list:
 
 ## Usage
 
-Everything below is run from Terminal, from inside the project folder
-(the one you `cd`'d into during Install).
+Everything below is run from Terminal, from inside the project folder —
+the same folder you moved into during Install (the one containing this
+README, `scraper.py`, and so on).
 
 **Reminder: the virtual environment from Setup needs to be active every
 time**, in every new Terminal window, before any command below will
