@@ -76,44 +76,56 @@ Happy monitoring!
 
 ## Requirements
 
-The tool itself is plain Python and runs the same way on macOS, Windows,
-or Linux. The commands below are given for both **macOS/Linux** and
-**Windows** — use whichever matches your computer. (Windows commands
-below assume Command Prompt; if you use PowerShell instead, see the note
-in Setup about activating the virtual environment there.)
+These instructions are written for macOS, since that's what I use. The
+tool itself is plain Python and runs the same way on Windows or Linux —
+each macOS step below has a matching Windows dropdown right after it, if
+that's what you're on.
 
-- **A terminal** — the app where you'll type commands.
-  - **macOS**: Applications → Utilities → Terminal, or press `⌘ Space`,
-    type "Terminal," and press Return.
-  - **Windows**: press the Windows key, type "Command Prompt," and press
-    Enter.
+- **Terminal** — the app where you'll type commands. Open it via
+  Applications → Utilities → Terminal, or press `⌘ Space`, type
+  "Terminal," and press Return.
 
   Throughout this README, gray boxes like the one below hold commands.
-  Copy the text, paste it into your terminal, and press Return/Enter to
-  run it:
+  Copy the text, paste it into Terminal, and press Return to run it:
 
   ```bash
   echo "like this"
   ```
 
-- **Python 3.10 or newer.** Check what you have:
+  <details>
+  <summary>Using Windows instead?</summary>
 
-  **macOS/Linux:**
+  Press the Windows key, type **Command Prompt**, and press Enter — that's
+  your equivalent of Terminal for every step below.
+
+  </details>
+
+- **Python 3.10 or newer.** Check what you have by typing this into
+  Terminal and pressing Return:
+
   ```bash
   python3 --version
   ```
 
-  **Windows:**
-  ```bat
-  python --version
-  ```
-
   If it says 3.10 or higher, you're set. If it's older or missing,
-  download the installer from
-  [python.org](https://www.python.org/downloads/) and run it like any
-  other app. **On Windows, on the first install screen, check the box
-  that says "Add python.exe to PATH"** — if you skip this, the `python`
-  command won't be found afterward.
+  download the installer from [python.org](https://www.python.org/downloads/)
+  and run it like any other Mac app.
+
+  <details>
+  <summary>Using Windows instead?</summary>
+
+  Check your version with `python --version` (no `3`) instead. If it's
+  older than 3.10 or missing, download the installer from
+  [python.org](https://www.python.org/downloads/) — **on the first
+  install screen, check the box that says "Add python.exe to PATH,"**
+  or the `python` command won't be found afterward.
+
+  From here on, anywhere this README says a command starting with
+  `python3`, use `python` (no `3`) instead — that's the only difference
+  for the rest of Setup and Usage, beyond what's called out in its own
+  dropdown below.
+
+  </details>
 
 ## Install
 
@@ -122,24 +134,31 @@ in Setup about activating the virtual environment there.)
 1. Click the green **Code** button near the top of this page, then
    **Download ZIP**.
 2. Find the downloaded file — usually in your **Downloads** folder — and
-   unzip it (double-click on Mac; on Windows, right-click it and choose
-   **Extract All**). This creates a folder called `telegram-feed-main`.
-3. In your terminal, move into that folder:
+   double-click it to unzip. This creates a folder called
+   `telegram-feed-main`.
+3. In Terminal, move into that folder:
 
-   **macOS/Linux:**
    ```bash
    cd ~/Downloads/telegram-feed-main
    ```
 
-   **Windows:**
+   (If you moved the folder somewhere else first, like the Desktop, use
+   that path instead — e.g. `cd ~/Desktop/telegram-feed-main`.)
+
+   <details>
+   <summary>Using Windows instead?</summary>
+
+   Unzip by right-clicking the downloaded file and choosing **Extract
+   All**, then move into the folder with:
+
    ```bat
    cd %USERPROFILE%\Downloads\telegram-feed-main
    ```
 
-   (If you moved the folder somewhere else first, like the Desktop, use
-   that path instead — e.g. `cd ~/Desktop/telegram-feed-main` on
-   Mac/Linux, or `cd %USERPROFILE%\Desktop\telegram-feed-main` on
-   Windows.)
+   (or `cd %USERPROFILE%\Desktop\telegram-feed-main` if you moved it to
+   the Desktop first, etc.)
+
+   </details>
 
 **If you use git instead:**
 
@@ -148,7 +167,7 @@ git clone https://github.com/joshdaxelrod/telegram-feed.git
 cd telegram-feed
 ```
 
-(This one's identical on every OS.)
+(Identical on every OS.)
 
 **From here, both paths continue the same way.**
 
@@ -161,22 +180,26 @@ managed environment" errors), and if your computer has more than one
 copy of Python installed, it keeps this tool from accidentally using the
 wrong one.
 
-**macOS/Linux:**
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-**Windows (Command Prompt):**
+<details>
+<summary>Using Windows instead?</summary>
+
+**Command Prompt:**
 ```bat
 python -m venv venv
 venv\Scripts\activate
 ```
 
-**Windows (PowerShell):** same as above, but activate with
-`venv\Scripts\Activate.ps1` instead. If PowerShell refuses to run it with
-an error about "execution policies," run this once first, then try
-activating again: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+**PowerShell:** same, but activate with `venv\Scripts\Activate.ps1`
+instead. If PowerShell refuses to run it with an "execution policies"
+error, run this once, then try activating again:
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+
+</details>
 
 You'll know it worked because your prompt now starts with `(venv)`. Do
 this once per terminal session — any time you close the terminal and come
@@ -185,15 +208,18 @@ inside the project folder) before running any of the commands below.
 
 Now install the two small libraries this tool depends on:
 
-**macOS/Linux:**
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-**Windows:**
+<details>
+<summary>Using Windows instead?</summary>
+
 ```bat
 python -m pip install -r requirements.txt
 ```
+
+</details>
 
 `pip` is Python's package installer — this downloads two small helper
 libraries (`requests`, for fetching web pages, and `beautifulsoup4`, for
@@ -203,15 +229,18 @@ ending in something like "Successfully installed," it worked.
 Next, create your own list of channels to monitor. A template is
 included:
 
-**macOS/Linux:**
 ```bash
 cp channels.example.csv channels.csv
 ```
 
-**Windows:**
+<details>
+<summary>Using Windows instead?</summary>
+
 ```bat
 copy channels.example.csv channels.csv
 ```
+
+</details>
 
 Open `channels.csv` in any spreadsheet app (Numbers, Excel, Google
 Sheets) or a plain text editor, and replace the example rows with your
@@ -261,14 +290,18 @@ developing a good dataset. A few ways I actually build that list:
 
 ## Usage
 
-Everything below is run from your terminal, from inside the project
-folder (the one you `cd`'d into during Install), with the virtual
-environment activated (your prompt should start with `(venv)` — see
-Setup for the activate command if you'd closed the terminal since then).
+Everything below is run from Terminal, from inside the project folder
+(the one you `cd`'d into during Install), with the virtual environment
+activated (your prompt should start with `(venv)` — see Setup for the
+activate command if you'd closed Terminal since then).
 
-Commands below are shown as `python3 ...` (macOS/Linux) — on **Windows**,
-use `python ...` instead (drop the `3`) for every command in this
-section.
+<details>
+<summary>Using Windows instead?</summary>
+
+Every command below is written as `python3 ...` — use `python ...`
+instead (drop the `3`) for all of them.
+
+</details>
 
 ### 1. Scrape
 
