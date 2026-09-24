@@ -293,14 +293,25 @@ developing a good dataset. A few ways I actually build that list:
 
 ## Usage
 
-Everything below is run from Terminal, from inside the project folder —
-the same folder you moved into during Install (the one containing this
-README, `scraper.py`, and so on).
+Everything below has to be run from inside the project folder — the same
+one you moved into during Install (the one containing this README,
+`scraper.py`, and so on). **Every time you open a new Terminal window,
+you need to redo two things first, in this order, before any command
+below will work:**
 
-**Reminder: the virtual environment from Setup needs to be active every
-time**, in every new Terminal window, before any command below will
-work. If your prompt doesn't already start with `(venv)`, run this first
-(from inside the project folder):
+**1. Navigate back into the project folder**, using `cd` followed by its
+path — the same one you used during Install. For example, if you used
+the ZIP method:
+
+```bash
+cd ~/Downloads/telegram-feed-main
+```
+
+(Use whatever path is actually correct for you — wherever you unzipped
+it, or wherever you ran `git clone` if you used git instead.)
+
+**2. Activate the virtual environment from Setup.** If your prompt
+doesn't already start with `(venv)`, run:
 
 ```bash
 source venv/bin/activate
@@ -309,7 +320,9 @@ source venv/bin/activate
 <details>
 <summary>Using Windows instead?</summary>
 
-Activate with `venv\Scripts\activate` (Command Prompt) or
+For step 1, `cd` works the same way, just with a Windows-style path, e.g.
+`cd %USERPROFILE%\Downloads\telegram-feed-main`. For step 2, activate
+with `venv\Scripts\activate` (Command Prompt) or
 `venv\Scripts\Activate.ps1` (PowerShell) instead. Every command below is
 also written as `python3 ...` — use `python ...` (drop the `3`) for all
 of them.
