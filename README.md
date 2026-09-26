@@ -387,10 +387,21 @@ python3 feed.py --hours 48
 python3 trace.py "some name or phrase"
 ```
 
-Unlike the feed pages, which only show whatever window you generated them
-for, this searches the *entire* database and prints every match in
-chronological order — useful for seeing exactly when and where something
-started spreading.
+This opens a page in your browser, in the same style as the feed pages,
+listing every post that matches — oldest first, each labeled with how long
+after the first post it appeared (`first`, `+2.5h`, …) — so you can see
+exactly when and where something started spreading. Like the feed pages,
+it has a filter box, and each card links to the original post.
+
+The feed pages' filter boxes only search the posts on that page; this
+searches everything in your database, looking back 7 days by default. To
+go further back:
+
+```bash
+python3 trace.py "some name or phrase" --hours 720    # last 30 days
+```
+
+Add `--terminal` if you'd also like the results printed in Terminal.
 
 ### 4. Clean up dead channels
 
