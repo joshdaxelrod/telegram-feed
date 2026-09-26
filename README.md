@@ -401,8 +401,6 @@ go further back:
 python3 trace.py "some name or phrase" --hours 720    # last 30 days
 ```
 
-Add `--terminal` if you'd also like the results printed in Terminal.
-
 ### 4. Clean up dead channels
 
 ```bash
