@@ -11,7 +11,6 @@ Usage:
     python trace.py "mask mandate" --hours 168
     python trace.py "bird flu" --hours 72
     python trace.py "bird flu" --no-open     # write the page without opening it
-    python trace.py "bird flu" --terminal    # also print results in the terminal
 """
 
 import argparse
@@ -99,37 +98,11 @@ def write_trace_html(query: str, results: list[dict], hours: int) -> Path:
     return path
 
 
-def print_trace(query: str, hours: int = 168):
-    results = trace(query, hours=hours)
-
-    if not results:
-        print(f"\nNo messages found matching '{query}' in the last {hours}h.")
-        return
-
-    print(f"\n=== Trace: '{query}' — {len(results)} matches over last {hours}h ===\n")
-
-    first_date = datetime.fromisoformat(results[0]["date"])
-    for r in results:
-        msg_date = datetime.fromisoformat(r["date"])
-        offset = _offset_label(msg_date, first_date)
-
-        date_str = r["date"][:16].replace("T", " ")
-        snippet = (r["text"] or "").replace("\n", " ")[:160]
-        post_url = f"https://t.me/{r['channel']}/{r['message_id']}"
-
-        print(f"[{offset:>8}]  @{r['channel']}  {date_str} UTC")
-        print(f"           views={r['views']}")
-        print(f"           {snippet}")
-        print(f"           {post_url}")
-        print()
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Trace a claim across the channel network")
     parser.add_argument("query", help="Search terms (space-separated, all must match)")
     parser.add_argument("--hours", type=int, default=168)
     parser.add_argument("--no-open", action="store_true", help="Write the HTML page without opening a browser")
-    parser.add_argument("--terminal", action="store_true", help="Also print the results in the terminal")
     args = parser.parse_args()
 
     results = trace(args.query, hours=args.hours)
@@ -138,7 +111,5 @@ if __name__ == "__main__":
     else:
         path = write_trace_html(args.query, results, hours=args.hours)
         print(f"{len(results)} matches for '{args.query}' → {path}")
-        if args.terminal:
-            print_trace(args.query, hours=args.hours)
         if not args.no_open:
             webbrowser.open(path.as_uri())
