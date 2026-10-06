@@ -545,7 +545,7 @@ Being upfront about what this can't do:
 
 MIT — see [LICENSE](LICENSE).
 
-Built with AI assistance (Claude), reviewed and tested by me.
+Disclaimer: built with AI assistance (Claude Sonnet 5), reviewed and tested by me.
 
 ## About
 
