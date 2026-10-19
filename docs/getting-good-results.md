@@ -38,6 +38,10 @@ channels actually look like. Both work the same way: add a plain text
 file with your own words or phrases in it, one per line, and it gets
 picked up automatically.
 
+On a Mac, if you make the file in TextEdit, choose **Format → Make Plain
+Text** before saving — otherwise TextEdit saves it in a different format
+the tool can't read.
+
 **Filtering out ads and spam — `filters.local.txt`.** `filters.py`
 drops ads and "subscribe to our backup channel" spam from the feeds
 using a built-in list of English example phrases (things like
@@ -133,7 +137,7 @@ Being upfront about what this can't do:
 - **Trending doesn't work on non-Latin scripts.** It splits text into
   words using a pattern that only matches Latin letters (English,
   German, French, and similar). Channels posting in Arabic, Russian,
-  Chinese, or another non-Latin script will tokenize to nothing, so
+  Chinese, or another non-Latin script won't register any words, so
   Trending will always come back empty for them — Popular, Random, and
   Spotlight are unaffected, since they don't need to split text into
   words at all.

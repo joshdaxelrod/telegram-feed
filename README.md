@@ -36,45 +36,42 @@ you'd like to monitor — more tips on how to do that in
 
 Happy monitoring!
 
-## Screenshots
-
-**Trending** — a narrative taking off across multiple channels, before it's an obviously "popular" post:
-
-<img src="screenshots/trending.png" width="600" alt="Trending feed">
-
-**Popular** — the most-viewed posts right now:
-
-<img src="screenshots/popular.png" width="600" alt="Popular feed">
-
-**Random** — a random sample for browsing outside the rankings:
-
-<img src="screenshots/random.png" width="600" alt="Random feed">
-
-**Spotlight** — each channel's own top post, so small channels aren't buried:
-
-<img src="screenshots/spotlight.png" width="600" alt="Spotlight feed">
-
 ## What it does, in plain terms
 
 - **Scrape** — visits every channel in your list and saves what they've
   posted recently into a small local database on your own computer.
   Nothing is uploaded anywhere.
-- **Feed** — turns what's scraped into four browsable web pages:
-  - **Trending** — words or phrases spreading across several channels
-    right now, more than they normally do. This is the one most likely to
-    catch something before it's an obviously "popular" post.
-  - **Popular** — the most-viewed posts right now. If the same post got
-    copy-pasted across five channels, it's shown once with a badge saying
-    so, instead of cluttering the page five times.
-  - **Random** — a random sample, so you're not only ever seeing whatever
-    the popularity ranking surfaces.
-  - **Spotlight** — each channel's own best post, so a quiet channel's
-    one interesting post of the day shows up next to a busy channel's
-    best post, instead of getting buried underneath it.
+- **Feed** — turns what's scraped into four browsable web pages (see
+  [The four feed pages](#the-four-feed-pages) below).
 - **Search** — full-text search across everything you've ever scraped, by
   keyword and date range, showing chronologically how something spread.
 - **Audit** — flags channels in your list that never produced a single
   post, usually a sign the handle is wrong or the channel's gone private.
+
+### The four feed pages
+
+**Trending** — words or phrases spreading across several channels
+right now, more than they normally do. This is the one most likely to
+catch something before it's an obviously "popular" post.
+
+<img src="screenshots/trending.png" width="600" alt="Trending feed">
+
+**Popular** — the most-viewed posts right now. If the same post got
+copy-pasted across five channels, it's shown once with a badge saying
+so, instead of cluttering the page five times.
+
+<img src="screenshots/popular.png" width="600" alt="Popular feed">
+
+**Random** — a random sample, so you're not only ever seeing whatever
+the popularity ranking surfaces.
+
+<img src="screenshots/random.png" width="600" alt="Random feed">
+
+**Spotlight** — each channel's own best post, so a quiet channel's
+one interesting post of the day shows up next to a busy channel's
+best post, instead of getting buried underneath it.
+
+<img src="screenshots/spotlight.png" width="600" alt="Spotlight feed">
 
 ## Get started
 
