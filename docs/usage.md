@@ -2,13 +2,15 @@
 
 [Overview](../README.md) · [Install](install.md) · **Use** · [Getting good results](getting-good-results.md)
 
+## Before you start (every time)
+
 Everything below has to be run from inside the project folder — the same
 one you moved into during [Install](install.md#download) (the one containing `README.md`,
 `scraper.py`, and so on). **Every time you open a new Terminal window,
 you need to redo two things first, in this order, before any command
 below will work:**
 
-**1. Navigate back into the project folder**, using `cd` followed by its
+**First, navigate back into the project folder**, using `cd` followed by its
 path — the same one you used during Install:
 
 ```bash
@@ -18,7 +20,7 @@ cd ~/Downloads/telegram-feed-main
 (This is the same for the ZIP and git methods. If you moved the folder
 somewhere else afterward, use that path instead.)
 
-**2. Activate the virtual environment from [Setup](install.md#setup).** If your prompt
+**Then, activate the virtual environment from [Setup](install.md#setup).** If your prompt
 doesn't already start with `(venv)`, run:
 
 ```bash
@@ -28,8 +30,8 @@ source venv/bin/activate
 <details>
 <summary>Using Windows instead?</summary>
 
-For step 1, `cd` works the same way, just with a Windows-style path, e.g.
-`cd %USERPROFILE%\Downloads\telegram-feed-main`. For step 2, activate
+To navigate, `cd` works the same way, just with a Windows-style path, e.g.
+`cd %USERPROFILE%\Downloads\telegram-feed-main`. To activate, use
 with `venv\Scripts\activate` (Command Prompt) or
 `venv\Scripts\Activate.ps1` (PowerShell) instead. Every command below is
 also written as `python3 ...` — use `python ...` (drop the `3`) for all
@@ -39,26 +41,16 @@ of them.
 
 ## 1. Scrape
 
-```bash
-python3 scraper.py
-```
-
-This visits every channel in `channels.csv` and saves their posts from
-the last 24 hours into a local file, `data/messages.db`. You'll see a
-line per channel (e.g. `guardian: 146 new messages`) as it goes — when
-it prints `Done.`, it's finished.
-
-To look further back:
-
-```bash
-python3 scraper.py --hours 72     # last 3 days instead of 24 hours
-```
-
-**The first time you set this up, scrape a full week instead of a day:**
+**The first time you set this up, scrape a full week:**
 
 ```bash
 python3 scraper.py --hours 168    # once, when you're starting out
 ```
+
+This visits every channel in `channels.csv` and saves their posts from
+the last week into a local file, `data/messages.db`. You'll see a
+line per channel (e.g. `guardian: 146 new messages`) as it goes — when
+it prints `Done.`, it's finished.
 
 Here's why: the Trending page (see step 2) works by comparing how often a term
 comes up *right now* against how often it normally comes up over the
@@ -70,6 +62,18 @@ this for good. After that, your regular daily (or however often you
 like) scrapes keep that history continuously topped up. If a real gap
 ever does open up (you stop scraping for a while, then pick it back up),
 just run the `--hours 168` backfill again.
+
+**After that,** a regular scrape covers the last 24 hours:
+
+```bash
+python3 scraper.py
+```
+
+To look further back:
+
+```bash
+python3 scraper.py --hours 72     # last 3 days instead of 24 hours
+```
 
 ## 2. Generate the feed
 

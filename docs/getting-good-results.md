@@ -43,8 +43,8 @@ drops ads and "subscribe to our backup channel" spam from the feeds
 using a built-in list of English example phrases (things like
 `"subscribe now"` or `"buy now"`). If your channels use different spam
 phrases — in English or any other language — create a file called
-`filters.local.txt` in this same folder, and put one spam phrase per
-line:
+`filters.local.txt` in the project folder (`telegram-feed-main`, the one
+with `scraper.py` in it), and put one spam phrase per line:
 
 ```
 jetzt abonnieren
@@ -67,8 +67,8 @@ common they get ignored, so the Trending page surfaces actual topics
 instead of grammar. If your channels post in a language other than
 English, this list won't catch that language's filler words, and
 Trending will fill up with meaningless function words instead of real
-topics. Fix it the same way: create a file called `stopwords.local.txt`,
-one filler word per line:
+topics. Fix it the same way: create a file called `stopwords.local.txt`
+in the project folder, one filler word per line:
 
 ```
 der
@@ -129,7 +129,7 @@ Being upfront about what this can't do:
   channels, not just several posts — otherwise one copy-pasted post reads
   as a fake spike. What counts as "several" depends on how many channels
   you're watching; if Trending comes back empty, try
-  `python3 trends.py --min-channels 2` and raise it from there.
+  `python3 feed.py --min-channels 2` and raise it from there.
 - **Trending doesn't work on non-Latin scripts.** It splits text into
   words using a pattern that only matches Latin letters (English,
   German, French, and similar). Channels posting in Arabic, Russian,
