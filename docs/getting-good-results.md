@@ -137,7 +137,3 @@ Being upfront about what this can't do:
   Trending will always come back empty for them — Popular, Random, and
   Spotlight are unaffected, since they don't need to split text into
   words at all.
-
----
-
-**Back to: [Overview](../README.md)**
