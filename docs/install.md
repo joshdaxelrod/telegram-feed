@@ -59,7 +59,7 @@ that's what you're on.
 
 **Option 1: Download the ZIP (easiest for most people)**
 
-1. Click the green **Code** button near the top of this page, then
+1. Click the green **Code** button on the [main page](https://github.com/joshdaxelrod/telegram-feed), then
    **Download ZIP**.
 2. Find the downloaded file — usually in your **Downloads** folder — and
    double-click it to unzip. This creates a folder called

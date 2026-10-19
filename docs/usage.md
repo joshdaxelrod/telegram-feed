@@ -52,7 +52,7 @@ the last week into a local file, `data/messages.db`. You'll see a
 line per channel (e.g. `guardian: 146 new messages`) as it goes — when
 it prints `Done.`, it's finished.
 
-Here's why: the Trending page (see step 2) works by comparing how often a term
+Why a full week: the Trending page (see step 2) works by comparing how often a term
 comes up *right now* against how often it normally comes up over the
 past 7 days. If your database only has a day of history in it, there's
 no real "normal" to compare against, and Trending will show nonsense —
@@ -63,7 +63,7 @@ like) scrapes keep that history continuously topped up. If a real gap
 ever does open up (you stop scraping for a while, then pick it back up),
 just run the `--hours 168` backfill again.
 
-**After that,** a regular scrape covers the last 24 hours:
+**From then on,** a regular scrape covers the last 24 hours:
 
 ```bash
 python3 scraper.py

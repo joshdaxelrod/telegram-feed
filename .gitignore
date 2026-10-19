@@ -14,8 +14,7 @@ venv/
 channels.csv
 
 # Personal stopword/filter additions (e.g. for a non-English channel set) —
-# see trends.py / filters.py / the README's "Customizing for your channels"
-# section.
+# see trends.py / filters.py / docs/getting-good-results.md.
 stopwords.local.txt
 filters.local.txt
 
