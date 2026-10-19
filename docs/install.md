@@ -173,9 +173,8 @@ copy channels.example.csv channels.csv
 
 </details>
 
-Open `channels.csv` in a plain text editor (TextEdit or Notepad), and
-replace the example rows with your
-own channels — one handle per line (for tips on choosing them, see
+Right-click `channels.csv` and open it with TextEdit (or Notepad), then
+replace the example rows with your own channels — one handle per line (for tips on choosing them, see
 [Finding channels to monitor](getting-good-results.md#finding-channels-to-monitor)):
 
 ```csv
