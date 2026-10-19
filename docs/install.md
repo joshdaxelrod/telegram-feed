@@ -173,8 +173,8 @@ copy channels.example.csv channels.csv
 
 </details>
 
-Open `channels.csv` in any spreadsheet app (Numbers, Excel, Google
-Sheets) or a plain text editor, and replace the example rows with your
+Open `channels.csv` in a plain text editor (TextEdit or Notepad), and
+replace the example rows with your
 own channels — one handle per line (for tips on choosing them, see
 [Finding channels to monitor](getting-good-results.md#finding-channels-to-monitor)):
 

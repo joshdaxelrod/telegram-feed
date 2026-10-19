@@ -36,11 +36,8 @@ developing a good dataset. A few ways I actually build that list:
 You'll likely want to adjust two things once you know what your own
 channels actually look like. Both work the same way: add a plain text
 file with your own words or phrases in it, one per line, and it gets
-picked up automatically.
-
-On a Mac, if you make the file in TextEdit, choose **Format → Make Plain
-Text** before saving — otherwise TextEdit saves it in a different format
-the tool can't read.
+picked up automatically. (In TextEdit, choose **Format → Make Plain
+Text** first.)
 
 **Filtering out ads and spam — `filters.local.txt`.** `filters.py`
 drops ads and "subscribe to our backup channel" spam from the feeds
