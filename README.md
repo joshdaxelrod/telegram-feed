@@ -1,8 +1,7 @@
 # Telegram Monitoring Feed
 
 Turn a list of Telegram channels into a browsable feed of what's posting,
-what's popular, and what's spreading — without opening the Telegram app
-once.
+what's popular, and what's spreading without opening the Telegram app.
 
 **Overview** · [Install](docs/install.md) · [Use](docs/usage.md) · [Getting good results](docs/getting-good-results.md)
 
