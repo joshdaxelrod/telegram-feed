@@ -31,8 +31,8 @@ source venv/bin/activate
 <summary>Using Windows instead?</summary>
 
 To navigate, `cd` works the same way, just with a Windows-style path, e.g.
-`cd %USERPROFILE%\Downloads\telegram-feed-main`. To activate, use
-with `venv\Scripts\activate` (Command Prompt) or
+`cd %USERPROFILE%\Downloads\telegram-feed-main`. To activate, run
+`venv\Scripts\activate` (Command Prompt) or
 `venv\Scripts\Activate.ps1` (PowerShell) instead. Every command below is
 also written as `python3 ...` — use `python ...` (drop the `3`) for all
 of them.
