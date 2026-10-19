@@ -9,15 +9,14 @@ you need to redo two things first, in this order, before any command
 below will work:**
 
 **1. Navigate back into the project folder**, using `cd` followed by its
-path — the same one you used during Install. For example, if you used
-the ZIP method:
+path — the same one you used during Install:
 
 ```bash
 cd ~/Downloads/telegram-feed-main
 ```
 
-(Use whatever path is actually correct for you — wherever you unzipped
-it, or wherever you ran `git clone` if you used git instead.)
+(This is the same for the ZIP and git methods. If you moved the folder
+somewhere else afterward, use that path instead.)
 
 **2. Activate the virtual environment from [Setup](install.md#setup).** If your prompt
 doesn't already start with `(venv)`, run:

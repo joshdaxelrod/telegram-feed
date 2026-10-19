@@ -91,11 +91,14 @@ that's what you're on.
 **If you use git instead:**
 
 ```bash
-git clone https://github.com/joshdaxelrod/telegram-feed.git
-cd telegram-feed
+cd Downloads
+git clone https://github.com/joshdaxelrod/telegram-feed.git telegram-feed-main
+cd telegram-feed-main
 ```
 
-(Identical on every OS.)
+(Identical on every OS. This puts the folder in the same place, with the
+same name, as the ZIP method, so the paths in the rest of these
+instructions work for you too.)
 
 **From here, both paths continue the same way.**
 
