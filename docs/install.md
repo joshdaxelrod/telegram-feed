@@ -57,7 +57,7 @@ that's what you're on.
 
 ## Download
 
-**If you don't use git (the easiest path for most people):**
+**Option 1: Download the ZIP (easiest for most people)**
 
 1. Click the green **Code** button near the top of this page, then
    **Download ZIP**.
@@ -88,7 +88,7 @@ that's what you're on.
 
    </details>
 
-**If you use git instead:**
+**Option 2: Use git**
 
 ```bash
 cd Downloads
@@ -100,7 +100,7 @@ cd telegram-feed-main
 same name, as the ZIP method, so the paths in the rest of these
 instructions work for you too.)
 
-**From here, both paths continue the same way.**
+**From here, both options continue the same way.**
 
 ## Setup
 
