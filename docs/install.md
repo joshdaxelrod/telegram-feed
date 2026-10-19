@@ -96,9 +96,8 @@ git clone https://github.com/joshdaxelrod/telegram-feed.git telegram-feed-main
 cd telegram-feed-main
 ```
 
-(Identical on every OS. This puts the folder in the same place, with the
-same name, as the ZIP method, so the paths in the rest of these
-instructions work for you too.)
+(Identical on every OS. Like the ZIP, this puts the tool in your
+Downloads folder.)
 
 **From here, both options continue the same way.**
 
