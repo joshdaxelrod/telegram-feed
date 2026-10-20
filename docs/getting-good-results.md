@@ -13,7 +13,12 @@ developing a good dataset. A few ways I actually build that list:
   forwarded message, so once you've scraped a channel, run
   `python3 snowball_channels.py` to rank which channels your list
   forwards from most — usually the fastest way to map out a wider
-  network from channels you already monitor.
+  network from channels you already monitor. Then run
+  `python3 review_candidates.py` to add the best-corroborated ones to
+  `channels.csv` automatically and review the rest one at a time
+  (`--threshold` adjusts how corroborated "best" means, and
+  `--exclude-file` skips handles you never want added, regardless of
+  score).
 - **Search Telegram itself.** Telegram's in-app search can surface
   channels by keyword or topic. Personally, I dislike Telegram search and
   find it hard to find channel names this way.
