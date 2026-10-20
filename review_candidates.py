@@ -1,18 +1,20 @@
 """
 Applies a corroboration threshold to data/snowball_candidates.csv (the
 output of snowball_channels.py): candidates forwarded from by enough of
-your channels get added to channels.csv automatically, and the rest are
-shown one at a time so you can decide by hand.
+your channels get added to channels.csv automatically. Everything below
+the threshold is left in snowball_candidates.csv for you to review
+yourself in a spreadsheet, rather than one at a time here.
 
-Optionally takes a plain-text file of handles to always skip (one per
-line, '#' comments allowed) — e.g. for channels you know don't fit your
-beat regardless of how corroborated they are.
+If a file called exclude.local.txt exists in this folder, handles listed
+in it (one per line, '#' comments allowed) are always skipped, regardless
+of how corroborated they are — e.g. for channels you know don't fit your
+beat. Create it yourself if you want this; works the same way as
+filters.local.txt and stopwords.local.txt elsewhere in this tool.
 
 Usage:
-    python3 review_candidates.py                        # threshold 5, review the rest
+    python3 review_candidates.py                     # threshold 5
     python3 review_candidates.py --threshold 3
-    python3 review_candidates.py --exclude-file exclude.local.txt
-    python3 review_candidates.py --no-interactive        # only auto-add, skip the review
+    python3 review_candidates.py --exclude-file some_other_file.txt
 """
 
 import argparse
@@ -21,9 +23,10 @@ from pathlib import Path
 
 CANDIDATES_PATH = Path(__file__).parent / "data" / "snowball_candidates.csv"
 CHANNELS_PATH = Path(__file__).parent / "channels.csv"
+DEFAULT_EXCLUDE_PATH = Path(__file__).parent / "exclude.local.txt"
 
 
-def _load_exclude(path: str | None) -> set[str]:
+def _load_exclude(path) -> set[str]:
     if not path or not Path(path).exists():
         return set()
     return {
@@ -51,18 +54,18 @@ def _append_channel(handle: str):
         f.write(f"{handle}{eol}")
 
 
-def run(threshold: int, exclude_file: str | None, interactive: bool):
+def run(threshold: int, exclude_file: str | None):
     if not CANDIDATES_PATH.exists():
         print(f"No {CANDIDATES_PATH} found — run snowball_channels.py first.")
         return
 
-    excluded = _load_exclude(exclude_file)
+    excluded = _load_exclude(exclude_file or DEFAULT_EXCLUDE_PATH)
     known = _existing_handles()
 
     with CANDIDATES_PATH.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
 
-    added, skipped_excluded, to_review = [], [], []
+    added, skipped_excluded, left_over = [], [], 0
     for r in rows:
         handle = r["handle"]
         if handle.lower() in known:
@@ -75,38 +78,21 @@ def run(threshold: int, exclude_file: str | None, interactive: bool):
             known.add(handle.lower())
             added.append(handle)
         else:
-            to_review.append(r)
+            left_over += 1
 
     print(f"Added {len(added)} channels at >= {threshold} sources: {', '.join(added) or '(none)'}")
     if skipped_excluded:
         print(f"Skipped {len(skipped_excluded)} excluded handles: {', '.join(skipped_excluded)}")
-
-    if not to_review:
-        return
-    if not interactive:
-        print(f"{len(to_review)} more below the threshold — rerun without --no-interactive to review them.")
-        return
-
-    print(f"\n{len(to_review)} below the threshold — reviewing one at a time "
-          f"(Enter or n = skip, y = add, q = stop reviewing):")
-    for r in to_review:
-        handle = r["handle"]
-        prompt = (
-            f"  {handle}  ({r['your_channels_forwarding_from_it']} sources, "
-            f"{r['times_forwarded']} forwards, via {r['forwarded_by']}) > "
-        )
-        choice = input(prompt).strip().lower()
-        if choice == "q":
-            break
-        if choice == "y":
-            _append_channel(handle)
-            print(f"    added {handle}")
+    if left_over:
+        print(f"{left_over} more below the threshold — open {CANDIDATES_PATH} to review those yourself.")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Review and add snowball candidates to channels.csv")
-    parser.add_argument("--threshold", type=int, default=5, help="Auto-add at this many sources or more (default 5)")
-    parser.add_argument("--exclude-file", help="Plain-text file of handles to always skip, one per line")
-    parser.add_argument("--no-interactive", action="store_true", help="Only auto-add; skip the one-by-one review")
+    parser = argparse.ArgumentParser(description="Add well-corroborated snowball candidates to channels.csv")
+    parser.add_argument("--threshold", type=int, default=5, help="Add at this many sources or more (default 5)")
+    parser.add_argument(
+        "--exclude-file",
+        help=f"Handles to always skip, one per line (default: {DEFAULT_EXCLUDE_PATH.name}, if it exists)",
+    )
     args = parser.parse_args()
-    run(args.threshold, args.exclude_file, interactive=not args.no_interactive)
+    run(args.threshold, args.exclude_file)
