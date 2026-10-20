@@ -65,6 +65,20 @@ def _media_type(msg) -> Optional[str]:
     return None
 
 
+def _forwarded_from(msg) -> Optional[str]:
+    """Returns the channel handle a post was forwarded from, or None if it's
+    not a forward or was forwarded from a private account/group with no
+    public page (so there's no handle to link)."""
+    block = msg.select_one(".tgme_widget_message_forwarded_from")
+    if not block:
+        return None
+    link = block.select_one("a[href]")
+    if not link:
+        return None
+    match = re.search(r"^https?://t\.me/([^/]+)/\d+$", link["href"])
+    return match.group(1) if match else None
+
+
 def _set_channel_found(conn: sqlite3.Connection, handle: str, found: bool):
     """Records whether a channel's page was reachable and non-empty on its
     most recent scrape — used by audit_channels.py to flag channels that
@@ -143,20 +157,21 @@ def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
             views_el = msg.select_one(".tgme_widget_message_views")
             views = _parse_count(views_el.get_text() if views_el else "")
 
-            is_forward = 1 if msg.select_one(".tgme_widget_message_forwarded") else 0
+            forwarded_from = _forwarded_from(msg)
+            is_forward = 1 if forwarded_from is not None or msg.select_one(".tgme_widget_message_forwarded_from") else 0
 
             try:
                 conn.execute(
                     """
                     INSERT INTO messages
                         (channel, message_id, date, text, views,
-                         is_forward, media_type, scraped_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                         is_forward, media_type, scraped_at, forwarded_from)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         handle, message_id, msg_date.isoformat(),
                         text, views, is_forward,
-                        _media_type(msg), scraped_at,
+                        _media_type(msg), scraped_at, forwarded_from,
                     ),
                 )
                 count += 1

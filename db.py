@@ -40,6 +40,9 @@ def init_db():
                 checked_at  TEXT NOT NULL
             );
         """)
+        cols = [row[1] for row in conn.execute("PRAGMA table_info(messages)")]
+        if "forwarded_from" not in cols:
+            conn.execute("ALTER TABLE messages ADD COLUMN forwarded_from TEXT")
 
 
 if __name__ == "__main__":

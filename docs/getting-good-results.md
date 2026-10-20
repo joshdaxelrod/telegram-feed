@@ -9,10 +9,11 @@ anything on its own, it just watches the channels you already know about.
 For this tool to be helpful, you'll need to spend a couple hours
 developing a good dataset. A few ways I actually build that list:
 
-- **Follow the forwards.** Once you've found one relevant channel, check
-  what it reposts from and who reposts it. Telegram shows the original
-  source on any forwarded message, which is usually the fastest way to
-  map out a whole network starting from a single channel.
+- **Follow the forwards.** Telegram shows the original source on any
+  forwarded message, so once you've scraped a channel, run
+  `python3 snowball_channels.py` to rank which channels your list
+  forwards from most — usually the fastest way to map out a wider
+  network from channels you already monitor.
 - **Search Telegram itself.** Telegram's in-app search can surface
   channels by keyword or topic. Personally, I dislike Telegram search and
   find it hard to find channel names this way.
