@@ -17,6 +17,7 @@ channels.csv
 # see trends.py / filters.py / docs/getting-good-results.md.
 stopwords.local.txt
 filters.local.txt
+exclude.local.txt
 
 # Legacy/local test data, not part of the public tool.
 channels.json
