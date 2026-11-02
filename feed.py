@@ -29,7 +29,10 @@ import webbrowser
 from datetime import datetime, timezone
 from pathlib import Path
 
-from score import get_top_messages, get_random_messages, get_spotlight_messages, get_keyword_messages
+from score import (
+    get_top_messages, get_random_messages, get_spotlight_messages,
+    get_keyword_messages, get_messages_by_keys,
+)
 from trends import get_trending_terms, diagnose_baseline
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -560,9 +563,7 @@ def build_trending_feed(
     for t in terms:
         slug = _slugify(t["term"])
         detail_path = DATA_DIR / f"trending_{slug}.html"
-        detail_messages = get_keyword_messages(
-            keywords=t["term"].split(), hours=hours, limit=detail_limit, match_all=True,
-        )
+        detail_messages = get_messages_by_keys(t["message_keys"], limit=detail_limit)
         detail_subtitle = (
             f"{len(detail_messages)} posts matching &#8220;{_escape(t['term'])}&#8221; "
             f"&middot; last {hours}h &middot; generated {generated}"

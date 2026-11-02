@@ -54,9 +54,11 @@ SIGNATURE_LOOKBACK_HOURS = 168
 # Longer lines are always content: signatures are short, and a channel
 # repeating a long paragraph is repeating a claim, not signing off.
 SIGNATURE_MAX_LINE_CHARS = 100
-# Below this many characters of real content, posts are never merged —
-# two-word captions would otherwise "match" across dozens of channels.
+# Below this many characters of real content, posts only merge on an exact
+# match, and get no "N channels" badge — two-word captions would otherwise
+# "match" loosely across dozens of channels.
 MIN_DEDUP_CHARS = 30
+SHORT_GROUP_PREFIX = "short:"
 # Content keys are compared on this many leading characters.
 DEDUP_KEY_CHARS = 200
 
@@ -154,8 +156,13 @@ def _group_keys(candidates: list[dict]) -> list[str | None]:
     groups = []
     for r in candidates:
         key = r["_key"]
-        if len(key) < MIN_DEDUP_CHARS:
+        if not key:
             groups.append(None)
+            continue
+        if len(key) < MIN_DEDUP_CHARS:
+            # Exact matches only — and see get_top_messages: no badge,
+            # since a shared two-word caption doesn't mean a shared post.
+            groups.append(SHORT_GROUP_PREFIX + key)
             continue
         if r["_truncated"] and len(key) < DEDUP_KEY_CHARS:
             # The last word may be cut mid-word, which still prefix-matches.
@@ -203,7 +210,8 @@ def get_top_messages(
         r["virality_score"] = virality_score(r["views"])
         r["channel_count"] = 1
     for group, r in seen.items():
-        r["channel_count"] = len(channels_by_group[group])
+        if not group.startswith(SHORT_GROUP_PREFIX):
+            r["channel_count"] = len(channels_by_group[group])
     for r in candidates:
         r.pop("_key", None)
         r.pop("_truncated", None)
@@ -288,8 +296,8 @@ def get_keyword_messages(
     could well have sat between them)."""
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
     joiner = " AND " if match_all else " OR "
-    kw_clause = joiner.join(f"LOWER(text) LIKE :kw{i}" for i in range(len(keywords)))
-    exc_clause = " AND ".join(f"LOWER(text) NOT LIKE :ex{i}" for i in range(len(exclude or [])))
+    kw_clause = joiner.join(f"ULOWER(text) LIKE :kw{i}" for i in range(len(keywords)))
+    exc_clause = " AND ".join(f"ULOWER(text) NOT LIKE :ex{i}" for i in range(len(exclude or [])))
     exc_clause = f"AND ({exc_clause})" if exc_clause else ""
     params = {"since": since}
     for i, kw in enumerate(keywords):
@@ -322,6 +330,31 @@ def get_keyword_messages(
         results.append(r)
         if len(results) >= limit:
             break
+    return results
+
+
+def get_messages_by_keys(keys: set[tuple[str, int]], limit: int = 50) -> list[dict]:
+    """The given (channel, message_id) posts, most-viewed first — for a
+    trending term's detail page, so it shows exactly the posts behind the
+    term instead of a fuzzy keyword search."""
+    if not keys:
+        return []
+    with get_conn() as conn:
+        conn.execute("CREATE TEMP TABLE wanted (channel TEXT, message_id INTEGER)")
+        conn.executemany("INSERT INTO wanted VALUES (?, ?)", keys)
+        rows = conn.execute("""
+            SELECT m.channel, m.message_id, m.date, m.text, m.views, m.media_type
+            FROM messages m JOIN wanted w
+              ON m.channel = w.channel AND m.message_id = w.message_id
+            ORDER BY m.views DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+    results = []
+    for row in rows:
+        r = dict(row)
+        r["virality_score"] = virality_score(r["views"])
+        r["channel_count"] = 1
+        results.append(r)
     return results
 
 

@@ -1,8 +1,8 @@
 """
 One-time repair for the forward-detection bug fixed in scraper.py.
 
-scraper.py skips any post it's already saved (so a normal re-scrape
-doesn't fix old rows' stale is_forward/forwarded_from values). This
+scraper.py only refreshes view counts on posts it's already saved (so a
+normal re-scrape doesn't fix old rows' stale is_forward/forwarded_from values). This
 re-fetches each channel's current pages and overwrites those two columns
 on existing rows too — same page-fetching logic as scraper.py, limited to
 the same recent history Telegram's public preview pages show.

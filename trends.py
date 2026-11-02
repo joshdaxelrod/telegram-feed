@@ -29,6 +29,7 @@ from pathlib import Path
 
 from db import get_conn
 from filters import is_junk
+from score import _normalize
 
 # Personal, git-ignored addition to STOPWORDS below — one word per line.
 # Use this instead of editing STOPWORDS directly if you want your own
@@ -69,6 +70,8 @@ def _load_stopwords() -> set[str]:
 
 _ACTIVE_STOPWORDS = _load_stopwords()
 
+REPOST_WINDOW = timedelta(hours=24)
+
 _TOKEN_RE = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ]{3,}")
 
 
@@ -94,8 +97,24 @@ def _fetch_range(conn, since: str, until: str) -> list[dict]:
         WHERE date >= :since AND date < :until
           AND text != ''
     """
-    rows = conn.execute(query, {"since": since, "until": until}).fetchall()
-    return [dict(r) for r in rows if not is_junk(r["text"] or "")]
+    rows = conn.execute(query + " ORDER BY date", {"since": since, "until": until}).fetchall()
+    # A channel re-posting the same text within REPOST_WINDOW is one mention,
+    # not several. Copies further apart still count: a channel returning to a
+    # topic day after day is part of that topic's normal baseline.
+    last_kept: dict[tuple[str, str], datetime] = {}
+    result = []
+    for r in rows:
+        text = r["text"] or ""
+        if is_junk(text):
+            continue
+        key = (r["channel"], _normalize(text))
+        date = datetime.fromisoformat(r["date"])
+        prev = last_kept.get(key)
+        if prev is not None and date - prev < REPOST_WINDOW:
+            continue
+        last_kept[key] = date
+        result.append(dict(r))
+    return result
 
 
 def _count_terms(messages: list[dict]) -> Counter:
@@ -157,6 +176,8 @@ def get_trending_terms(
     as_of: datetime | None = None,
 ) -> list[dict]:
     """Score = (recent mention rate) / (baseline mention rate, smoothed).
+    Each result's message_keys are the exact (channel, message_id) posts
+    behind the term.
 
     min_channels requires a term to appear on at least that many distinct
     channels in the recent window — without this, a single post
@@ -189,7 +210,7 @@ def get_trending_terms(
             channels_per_term.setdefault(term, set()).add(m["channel"])
             messages_per_term.setdefault(term, set()).add(msg_key)
             bucket = examples.setdefault(term, [])
-            if len(bucket) < 2:
+            if len(bucket) < 2 and all(ex["channel"] != m["channel"] for ex in bucket):
                 bucket.append(m)
 
     results = []
@@ -218,7 +239,14 @@ def get_trending_terms(
             "_messages": messages_per_term[term],
         })
 
-    results.sort(key=lambda r: r["score"], reverse=True)
+    # New terms have no ratio to rank by (their score is just the mention
+    # count rescaled), so they go first, ordered by how many channels
+    # carry them; terms with a baseline follow, ordered by spike ratio.
+    results.sort(key=lambda r: (
+        r["is_new"],
+        r["channel_count"] if r["is_new"] else r["score"],
+        r["recent_count"],
+    ), reverse=True)
 
     selected = []
     for r in results:
@@ -232,7 +260,7 @@ def get_trending_terms(
             break
 
     for r in selected:
-        del r["_messages"]
+        r["message_keys"] = r.pop("_messages")
     return selected
 
 

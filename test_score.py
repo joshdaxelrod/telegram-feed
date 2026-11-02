@@ -266,17 +266,41 @@ def test_truncated_preview_merges_with_full_post(tmp_path):
     assert results[0]["channel_count"] == 2
 
 
-def test_short_posts_are_not_merged(tmp_path):
+def test_short_posts_merge_only_on_exact_match_without_badge(tmp_path):
     db_path = _setup_db(tmp_path)
     with patch.object(db, "DB_PATH", db_path):
         conn = db.get_conn()
-        _insert_message(conn, "chan_a", 1, views=5000, text="Unglaublich!")
-        _insert_message(conn, "chan_b", 2, views=3000, text="Unglaublich!")
+        for i, ch in enumerate(["chan_a", "chan_b", "chan_c"]):
+            _insert_message(conn, ch, i, views=5000 - i, text="Unglaublich!")
+        _insert_message(conn, "chan_d", 9, views=100, text="Unglaublich, oder?")
 
         results = score.get_top_messages(hours=24)
 
     assert len(results) == 2
     assert all(r["channel_count"] == 1 for r in results)
+
+
+def test_search_matches_umlaut_case_insensitively(tmp_path):
+    db_path = _setup_db(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "chan_a", 1, views=10, text="Überwiegend migrantisch, sagt die Polizei")
+
+        results = score.get_keyword_messages(["überwiegend"], hours=24)
+
+    assert len(results) == 1
+
+
+def test_get_messages_by_keys_returns_exact_posts(tmp_path):
+    db_path = _setup_db(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "chan_a", 1, views=10, text="Produkt alle ausverkauft")
+        _insert_message(conn, "chan_b", 2, views=99, text="Allerdings in Halle")
+
+        results = score.get_messages_by_keys({("chan_a", 1)})
+
+    assert [(r["channel"], r["message_id"]) for r in results] == [("chan_a", 1)]
 
 
 def test_channel_count_counts_channels_not_posts(tmp_path):

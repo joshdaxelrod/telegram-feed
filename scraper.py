@@ -177,9 +177,15 @@ def scrape_channel(handle: str, since: datetime, conn: sqlite3.Connection):
                 count += 1
             except sqlite3.IntegrityError as e:
                 # Expected for a post we've already saved (UNIQUE constraint
-                # on channel+message_id) — anything else (e.g. a schema
-                # mismatch) should be visible, not silently swallowed.
-                if "UNIQUE constraint" not in str(e):
+                # on channel+message_id) — refresh its view count so feeds
+                # rank by current views, not by when it was first scraped.
+                # Anything else (e.g. a schema mismatch) should be visible.
+                if "UNIQUE constraint" in str(e):
+                    conn.execute(
+                        "UPDATE messages SET views = MAX(views, ?) WHERE channel = ? AND message_id = ?",
+                        (views, handle, message_id),
+                    )
+                else:
                     log.warning(f"  {handle}: insert failed — {e}")
 
         conn.commit()

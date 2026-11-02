@@ -135,8 +135,8 @@ repository — it's your scraped data, not part of the tool itself.
 
 - **`data/messages.db`** is the database every scraped post goes into.
   Running the scraper again doesn't overwrite or duplicate anything — it
-  just adds newly-seen posts and quietly skips ones it's already saved,
-  so this file only ever grows. Nothing here is cleaned up automatically;
+  adds newly-seen posts and refreshes view counts on ones it's already
+  saved, so this file only ever grows. Nothing here is cleaned up automatically;
   if it gets too big, you can delete it and start fresh, but there's no
   getting back history you didn't capture at the time — Telegram's
   preview pages only show recent posts.

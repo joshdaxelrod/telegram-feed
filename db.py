@@ -12,6 +12,9 @@ def get_conn() -> sqlite3.Connection:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    # SQLite's own LOWER()/LIKE only fold ASCII, so 'Überwiegend' never
+    # matches 'überwiegend'. Use ULOWER(text) LIKE <python-lowered term>.
+    conn.create_function("ULOWER", 1, lambda s: s.lower() if s else s, deterministic=True)
     return conn
 
 

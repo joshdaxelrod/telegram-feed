@@ -39,10 +39,10 @@ def trace(query: str, hours: int = 168) -> list[dict]:
     since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
 
     terms = query.split()
-    like_clauses = " AND ".join(f"text LIKE :term{i}" for i in range(len(terms)))
+    like_clauses = " AND ".join(f"ULOWER(text) LIKE :term{i}" for i in range(len(terms)))
     params = {"since": since}
     for i, term in enumerate(terms):
-        params[f"term{i}"] = f"%{term}%"
+        params[f"term{i}"] = f"%{term.lower()}%"
 
     sql = f"""
         SELECT channel, message_id, date, text, views

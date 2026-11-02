@@ -86,7 +86,7 @@ def test_term_with_high_baseline_is_not_treated_as_new_spike(tmp_path):
         conn = db.get_conn()
         # heavy, steady baseline mentions of "ongoingsaga" across the week
         for i in range(30):
-            _insert_message(conn, f"chan_{i % 5}", 1000 + i, "The ongoingsaga continues today", hours_ago=24 + i * 4)
+            _insert_message(conn, f"chan_{i % 5}", 1000 + i, f"The ongoingsaga continues today, part {i}", hours_ago=24 + i * 4)
         # only a mild uptick in the recent window — same rate as usual, not a spike
         for i, chan in enumerate(["chan_a", "chan_b", "chan_c"]):
             _insert_message(conn, chan, i, "The ongoingsaga continues today", hours_ago=1)
@@ -175,3 +175,59 @@ def test_zero_baseline_term_is_marked_new(tmp_path):
     harbour = next(r for r in results if "harbour" in r["examples"][0]["text"])
     assert zeppelin["is_new"] is True
     assert harbour["is_new"] is False
+
+
+def test_same_channel_repost_counts_once(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        for i, ch in enumerate(["a", "b", "c"]):
+            _insert_message(conn, ch, i, "Zeppelin sighting reported downtown", hours_ago=2)
+        # channel a re-posts it twice more the same day
+        _insert_message(conn, "a", 10, "Zeppelin sighting reported downtown", hours_ago=1)
+        _insert_message(conn, "a", 11, "Zeppelin  sighting reported downtown!", hours_ago=0.5)
+
+        results = trends.get_trending_terms(
+            recent_hours=24, baseline_hours=168, min_recent_count=2, min_channels=3, as_of=as_of,
+        )
+
+    assert results and all(r["recent_count"] == 3 for r in results)
+    for r in results:
+        channels = [ex["channel"] for ex in r["examples"]]
+        assert len(channels) == len(set(channels))
+
+
+def test_new_terms_rank_by_channel_count(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        # "quokka": many mentions, few channels
+        for i in range(8):
+            _insert_message(conn, ["a", "b", "c"][i % 3], i, f"Quokka report number {i}", hours_ago=1)
+        # "walrus": fewer mentions, more channels
+        for i, ch in enumerate(["d", "e", "f", "g", "h"]):
+            _insert_message(conn, ch, 100 + i, "Walrus escapes zoo", hours_ago=1)
+
+        results = trends.get_trending_terms(
+            recent_hours=24, baseline_hours=168, min_recent_count=2, min_channels=3, as_of=as_of,
+        )
+
+    assert "Walrus" in results[0]["examples"][0]["text"]
+
+
+def test_detail_keys_are_exact_posts(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        for i, ch in enumerate(["a", "b", "c"]):
+            _insert_message(conn, ch, i, "Produkt alle ausverkauft", hours_ago=1)
+        _insert_message(conn, "d", 9, "Allerdings in Halle nichts Neues", hours_ago=1)
+
+        results = trends.get_trending_terms(
+            recent_hours=24, baseline_hours=168, min_recent_count=2, min_channels=3, as_of=as_of,
+        )
+
+    assert results[0]["message_keys"] == {("a", 0), ("b", 1), ("c", 2)}
