@@ -169,6 +169,9 @@ def test_zero_baseline_term_is_marked_new(tmp_path):
             recent_hours=24, baseline_hours=168, min_recent_count=2, min_channels=3, as_of=as_of,
         )
 
-    by_term = {r["term"]: r for r in results}
-    assert by_term["zeppelin"]["is_new"] is True
-    assert by_term["harbour"]["is_new"] is False
+    # Terms from the same posts collapse to one (e.g. only "sighting"
+    # survives of zeppelin/sighting/...), so find each by its example post.
+    zeppelin = next(r for r in results if "Zeppelin" in r["examples"][0]["text"])
+    harbour = next(r for r in results if "harbour" in r["examples"][0]["text"])
+    assert zeppelin["is_new"] is True
+    assert harbour["is_new"] is False

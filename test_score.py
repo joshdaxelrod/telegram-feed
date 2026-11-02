@@ -211,3 +211,83 @@ def test_get_keyword_messages_default_is_or_not_and(tmp_path):
 
     assert len(or_default) == 1
     assert and_mode == []
+
+
+CLAIM = "Die Regierung verschweigt den wahren Grund für die neuen Stromausfälle in Sachsen"
+
+
+def _insert_with_signature(conn, channel, start_id, signature, n=3):
+    """n unrelated posts carrying the channel's signature, so it's learned."""
+    for i in range(n):
+        _insert_message(conn, channel, start_id + i, views=10, hours_ago=30,
+                        text=f"Unrelated filler post number {i} from {channel}\n{signature}")
+
+
+def test_dedup_ignores_channel_signatures(tmp_path):
+    db_path = _setup_db(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_with_signature(conn, "chan_a", 100, "Folgt uns für mehr Infos @chan_a")
+        _insert_with_signature(conn, "chan_b", 200, "➡️ Kanal abonnieren: https://t.me/chan_b")
+        _insert_message(conn, "chan_a", 1, views=5000, text=f"{CLAIM}\nFolgt uns für mehr Infos @chan_a")
+        _insert_message(conn, "chan_b", 2, views=3000, text=f"{CLAIM}\n➡️ Kanal abonnieren: https://t.me/chan_b")
+
+        results = score.get_top_messages(hours=24)
+
+    assert len(results) == 1
+    assert results[0]["channel_count"] == 2
+
+
+def test_signature_only_posts_are_dropped(tmp_path):
+    db_path = _setup_db(tmp_path)
+    sig = "🟢\nIm Kanal\n@PolitischeBilder\ngibt es mehr\n🟢"
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_with_signature(conn, "chan_a", 100, sig)
+        for i in range(5):
+            _insert_message(conn, "chan_a", i, views=9000, text=sig)
+
+        results = score.get_top_messages(hours=24)
+
+    assert results == []
+
+
+def test_truncated_preview_merges_with_full_post(tmp_path):
+    db_path = _setup_db(tmp_path)
+    full = CLAIM + ". Laut Insidern wusste das Ministerium seit Wochen Bescheid und schwieg."
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "chan_a", 1, views=5000, text=full)
+        _insert_message(conn, "chan_b", 2, views=8000, text=CLAIM.replace(" in ", "\nin ")[:60] + "…")
+
+        results = score.get_top_messages(hours=24)
+
+    assert len(results) == 1
+    assert results[0]["channel_count"] == 2
+
+
+def test_short_posts_are_not_merged(tmp_path):
+    db_path = _setup_db(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "chan_a", 1, views=5000, text="Unglaublich!")
+        _insert_message(conn, "chan_b", 2, views=3000, text="Unglaublich!")
+
+        results = score.get_top_messages(hours=24)
+
+    assert len(results) == 2
+    assert all(r["channel_count"] == 1 for r in results)
+
+
+def test_channel_count_counts_channels_not_posts(tmp_path):
+    db_path = _setup_db(tmp_path)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        _insert_message(conn, "chan_a", 1, views=5000, text=CLAIM)
+        _insert_message(conn, "chan_a", 2, views=4000, text=CLAIM)
+        _insert_message(conn, "chan_b", 3, views=3000, text=CLAIM)
+
+        results = score.get_top_messages(hours=24)
+
+    assert len(results) == 1
+    assert results[0]["channel_count"] == 2
