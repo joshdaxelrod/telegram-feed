@@ -231,3 +231,23 @@ def test_detail_keys_are_exact_posts(tmp_path):
         )
 
     assert results[0]["message_keys"] == {("a", 0), ("b", 1), ("c", 2)}
+
+
+def test_new_term_reports_first_seen(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        for i, (ch, h) in enumerate([("a", 14), ("b", 5), ("c", 2)]):
+            _insert_message(conn, ch, i, "Zeppelin sighting reported downtown", hours_ago=h)
+
+        results = trends.get_trending_terms(
+            recent_hours=24, baseline_hours=168, min_recent_count=2, min_channels=3, as_of=as_of,
+        )
+
+    assert trends.format_ago(results[0]["first_seen"], as_of) == "14h ago"
+
+
+def test_format_ago_uses_minutes_under_an_hour():
+    now = datetime.now(timezone.utc)
+    assert trends.format_ago((now - timedelta(minutes=45)).isoformat(), now) == "45m ago"

@@ -203,12 +203,15 @@ def get_trending_terms(
 
     channels_per_term: dict[str, set] = {}
     messages_per_term: dict[str, set] = {}
+    first_seen: dict[str, str] = {}
     examples: dict[str, list[dict]] = {}
     for m in recent_msgs:
         msg_key = (m["channel"], m["message_id"])
         for term in _terms(m["text"] or ""):
             channels_per_term.setdefault(term, set()).add(m["channel"])
             messages_per_term.setdefault(term, set()).add(msg_key)
+            if term not in first_seen or m["date"] < first_seen[term]:
+                first_seen[term] = m["date"]
             bucket = examples.setdefault(term, [])
             if len(bucket) < 2 and all(ex["channel"] != m["channel"] for ex in bucket):
                 bucket.append(m)
@@ -235,6 +238,9 @@ def get_trending_terms(
             # rescaled (recent_count × baseline span / recent span), not a
             # meaningful multiplier — show these as "new" instead.
             "is_new": baseline_count == 0,
+            # Earliest post in the recent window carrying the term — for a new
+            # term, when it first appeared in the scraped channels.
+            "first_seen": first_seen[term],
             "examples": examples.get(term, []),
             "_messages": messages_per_term[term],
         })
@@ -264,6 +270,13 @@ def get_trending_terms(
     return selected
 
 
+def format_ago(iso_date: str, now: datetime | None = None) -> str:
+    """'14h ago' / '45m ago' for a post date."""
+    now = now or datetime.now(timezone.utc)
+    minutes = max(int((now - datetime.fromisoformat(iso_date)).total_seconds() // 60), 0)
+    return f"{minutes}m ago" if minutes < 60 else f"{round(minutes / 60)}h ago"
+
+
 def print_trending(
     recent_hours: int = 24,
     baseline_hours: int = 168,
@@ -290,7 +303,7 @@ def print_trending(
         return
 
     for i, r in enumerate(results, 1):
-        spike = "NEW (no earlier mentions)" if r["is_new"] else f"{r['score']:.1f}x baseline"
+        spike = f"first seen {format_ago(r['first_seen'], as_of)}" if r["is_new"] else f"{r['score']:.1f}x baseline"
         print(f"{i:2}. \"{r['term']}\"  —  {spike}  (recent={r['recent_count']} on {r['channel_count']} channels, baseline={r['baseline_count']})")
         for ex in r["examples"]:
             snippet = (ex["text"] or "").replace("\n", " ")[:120]

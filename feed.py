@@ -33,7 +33,7 @@ from score import (
     get_top_messages, get_random_messages, get_spotlight_messages,
     get_keyword_messages, get_messages_by_keys,
 )
-from trends import get_trending_terms, diagnose_baseline
+from trends import get_trending_terms, diagnose_baseline, format_ago
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -448,7 +448,7 @@ def _render_terms(terms: list[dict], subtitle: str, baseline_hours: int | None =
             rank=i,
             term=_escape(t["term"]),
             spike_label=(
-                "new &middot; no earlier mentions" if t["is_new"]
+                f"first seen {format_ago(t['first_seen'])}" if t["is_new"]
                 else f"{t['score']:.1f}x vs {baseline_label} baseline"
             ),
             channel_count=t["channel_count"],
@@ -584,13 +584,14 @@ def build_trending_feed(
     )
 
     with (DATA_DIR / "trending.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["rank", "term", "score", "recent_count", "channel_count", "baseline_count"])
+        writer = csv.DictWriter(f, fieldnames=["rank", "term", "score", "recent_count", "channel_count", "baseline_count", "first_seen"])
         writer.writeheader()
         for i, t in enumerate(terms, 1):
             writer.writerow({
                 "rank": i, "term": t["term"], "score": "new" if t["is_new"] else round(t["score"], 1),
                 "recent_count": t["recent_count"], "channel_count": t["channel_count"],
                 "baseline_count": t["baseline_count"],
+                "first_seen": t["first_seen"] if t["is_new"] else "",
             })
 
     return index_path
