@@ -58,7 +58,9 @@ folgt uns auf
 
 Any post containing one of those phrases gets filtered out, in addition
 to the built-in examples. Lines starting with `#` are ignored, so you
-can leave yourself notes. An AI assistant can help you build this list:
+can leave yourself notes. If a phrase over-matches (`anzeige` also hits
+`Strafanzeige`), start the line with `re:` and write a regular
+expression instead, e.g. `re:^\W*anzeige\W*$` for "Anzeige" on its own line. An AI assistant can help you build this list:
 paste in a handful of real ad/promo posts from your own channels and ask
 something like *"what phrases in here are advertising or 'subscribe to
 our channel' spam? List each one on its own line, exactly as it

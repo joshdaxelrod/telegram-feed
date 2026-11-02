@@ -152,3 +152,23 @@ def test_diagnose_baseline_silent_with_healthy_history(tmp_path):
         warning = trends.diagnose_baseline(recent_hours=24, baseline_hours=168, as_of=as_of)
 
     assert warning is None
+
+
+def test_zero_baseline_term_is_marked_new(tmp_path):
+    db_path = _setup_db(tmp_path)
+    as_of = datetime.now(timezone.utc)
+    with patch.object(db, "DB_PATH", db_path):
+        conn = db.get_conn()
+        for i, ch in enumerate(["a", "b", "c"]):
+            _insert_message(conn, ch, i, "Zeppelin sighting reported downtown", hours_ago=1)
+        _insert_message(conn, "a", 10, "Regular harbour update", hours_ago=60)
+        for i, ch in enumerate(["a", "b", "c"]):
+            _insert_message(conn, ch, 20 + i, "Regular harbour update", hours_ago=1)
+
+        results = trends.get_trending_terms(
+            recent_hours=24, baseline_hours=168, min_recent_count=2, min_channels=3, as_of=as_of,
+        )
+
+    by_term = {r["term"]: r for r in results}
+    assert by_term["zeppelin"]["is_new"] is True
+    assert by_term["harbour"]["is_new"] is False

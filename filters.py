@@ -5,7 +5,7 @@ and other posts with no editorial value.
 These patterns are STARTING EXAMPLES in English. Edit AD_PATTERNS /
 PROMO_PATTERNS for your own channels and language, or add a personal,
 git-ignored filters.local.txt (one phrase per line, matched literally,
-case-insensitive) instead — see the README's "Customizing for your
+case-insensitive; prefix a line with re: for a regular expression) instead — see the README's "Customizing for your
 channels" section for how.
 """
 
@@ -39,7 +39,12 @@ def _load_local_patterns() -> list[re.Pattern]:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        patterns.append(re.compile(re.escape(line), re.IGNORECASE))
+        if line.startswith("re:"):
+            # Regular expression, for when a plain phrase would over-match
+            # (e.g. ^\W*anzeige\W*$ for an "Anzeige" label on its own line).
+            patterns.append(re.compile(line[3:], re.IGNORECASE | re.MULTILINE))
+        else:
+            patterns.append(re.compile(re.escape(line), re.IGNORECASE))
     return patterns
 
 

@@ -210,6 +210,10 @@ def get_trending_terms(
             "channel_count": len(channels_per_term[term]),
             "baseline_count": baseline_count,
             "score": score,
+            # With zero baseline mentions the score is just the mention count
+            # rescaled (recent_count × baseline span / recent span), not a
+            # meaningful multiplier — show these as "new" instead.
+            "is_new": baseline_count == 0,
             "examples": examples.get(term, []),
             "_messages": messages_per_term[term],
         })
@@ -258,7 +262,8 @@ def print_trending(
         return
 
     for i, r in enumerate(results, 1):
-        print(f"{i:2}. \"{r['term']}\"  —  {r['score']:.1f}x baseline  (recent={r['recent_count']} on {r['channel_count']} channels, baseline={r['baseline_count']})")
+        spike = "NEW (no earlier mentions)" if r["is_new"] else f"{r['score']:.1f}x baseline"
+        print(f"{i:2}. \"{r['term']}\"  —  {spike}  (recent={r['recent_count']} on {r['channel_count']} channels, baseline={r['baseline_count']})")
         for ex in r["examples"]:
             snippet = (ex["text"] or "").replace("\n", " ")[:120]
             print(f"      @{ex['channel']}: {snippet}")

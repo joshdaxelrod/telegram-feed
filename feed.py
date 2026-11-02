@@ -327,7 +327,7 @@ TERM_CARD_TEMPLATE = """  <div class="term-card" data-search="{search_key}">
     <div class="term-header">
       <span class="rank">#{rank}</span>
       <span class="term-name">&#8220;{term}&#8221;</span>
-      <span class="spike-badge">&#9650; {score}x vs {baseline_label} baseline</span>
+      <span class="spike-badge">&#9650; {spike_label}</span>
       <span class="term-meta">{channel_count} channels &middot; {recent_count} mentions</span>
     </div>
     <div class="examples">
@@ -444,8 +444,10 @@ def _render_terms(terms: list[dict], subtitle: str, baseline_hours: int | None =
         rows.append(TERM_CARD_TEMPLATE.format(
             rank=i,
             term=_escape(t["term"]),
-            score=f"{t['score']:.1f}",
-            baseline_label=baseline_label,
+            spike_label=(
+                "new &middot; no earlier mentions" if t["is_new"]
+                else f"{t['score']:.1f}x vs {baseline_label} baseline"
+            ),
             channel_count=t["channel_count"],
             recent_count=t["recent_count"],
             examples=examples,
@@ -585,7 +587,7 @@ def build_trending_feed(
         writer.writeheader()
         for i, t in enumerate(terms, 1):
             writer.writerow({
-                "rank": i, "term": t["term"], "score": round(t["score"], 1),
+                "rank": i, "term": t["term"], "score": "new" if t["is_new"] else round(t["score"], 1),
                 "recent_count": t["recent_count"], "channel_count": t["channel_count"],
                 "baseline_count": t["baseline_count"],
             })
